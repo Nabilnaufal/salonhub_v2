@@ -61,6 +61,11 @@ class HomeController extends GetxController {
   ];
 
   void changeNavigation(int index) {
+    if (index == 1) {
+      Get.toNamed(Routes.ORDERS);
+      return;
+    }
+
     selectedNavIndex.value = index;
   }
 

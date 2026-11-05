@@ -17,6 +17,8 @@ abstract class Routes {
   static const APPOINTMENT_PAYMENT = _Paths.APPOINTMENT_PAYMENT;
   static const PAYMENT = _Paths.PAYMENT;
   static const INVOICE = _Paths.INVOICE;
+  static const ORDERS = _Paths.ORDERS;
+  static const RATING_REVIEW = _Paths.RATING_REVIEW;
 }
 
 abstract class _Paths {
@@ -35,4 +37,6 @@ abstract class _Paths {
   static const APPOINTMENT_PAYMENT = '/appointment-payment';
   static const PAYMENT = '/payment';
   static const INVOICE = '/invoice';
+  static const ORDERS = '/orders';
+  static const RATING_REVIEW = '/rating-review';
 }

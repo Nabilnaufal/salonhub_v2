@@ -103,14 +103,14 @@ class HomeView extends GetView<HomeController> {
           selectedFontSize: 10,
           unselectedFontSize: 10,
           items: [
-            _bottomBarItem('Beranda', 'lib/assets/icons/Home Smile.svg', 0),
-            _bottomBarItem('Pesanan', 'lib/assets/icons/Calendar Mark.svg', 1),
+            _bottomBarItem('Home', 'lib/assets/icons/Home Smile.svg', 0),
+            _bottomBarItem('Booking', 'lib/assets/icons/Calendar Mark.svg', 1),
             _bottomBarItem(
-              'Pesan',
+              'Chat',
               'lib/assets/icons/Chat Round Unread.svg',
               2,
             ),
-            _bottomBarItem('Profil', 'lib/assets/icons/User.svg', 3),
+            _bottomBarItem('Profile', 'lib/assets/icons/User.svg', 3),
           ],
         ),
       ),
