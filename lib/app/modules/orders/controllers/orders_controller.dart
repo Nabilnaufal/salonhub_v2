@@ -264,6 +264,10 @@ class OrdersController extends GetxController {
   void changeNavigation(int index) {
     if (index == 0) {
       Get.offNamed(Routes.HOME);
+    } else if (index == 2) {
+      Get.offNamed(Routes.CHAT);
+    } else if (index == 3) {
+      Get.offNamed(Routes.PROFILE);
     }
   }
 }

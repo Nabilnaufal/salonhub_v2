@@ -781,7 +781,7 @@ class OrdersView extends GetView<OrdersController> {
       items: [
         _bottomBarItem('Home', 'Home Smile.svg', false),
         _bottomBarItem('Booking', 'Calendar Mark.svg', true),
-        _bottomBarItem('Chat', 'Chat Round Unread.svg', false),
+          _bottomBarItem('Chat', 'Chat Round Unread.svg', false),
         _bottomBarItem('Profile', 'User.svg', false),
       ],
     );
