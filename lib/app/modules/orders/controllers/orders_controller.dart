@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:salonhub_v2/app/models/barber.dart';
 import 'package:salonhub_v2/app/routes/app_pages.dart';
 
 enum BookingStatus { booked, waiting, onProcess, finished }
@@ -109,6 +110,37 @@ class BookingOrder {
 class OrdersController extends GetxController {
   final selectedTab = 0.obs;
   final isBookingCancelled = false.obs;
+
+  final historyBarbers = const [
+    Barber(
+      name: 'Varcity Barbershop Jogja ex The Varcher',
+      description: 'Condongcatur',
+      distance: '10 km',
+      rating: '4.5',
+      image: 'lib/assets/barbershop_haircut_3.jpg',
+    ),
+    Barber(
+      name: 'Twinsky Monkey Barber & Men Stuff',
+      description: 'Jl Taman Siswa',
+      distance: '8 km',
+      rating: '5.0',
+      image: 'lib/assets/barbershop_exterior_1.jpg',
+    ),
+    Barber(
+      name: 'Barberman - Haircut styling & massage',
+      description: 'J-Walk Centre',
+      distance: '17 km',
+      rating: '4.5',
+      image: 'lib/assets/barbershop_interior_2.jpg',
+    ),
+    Barber(
+      name: 'Alana Barbershop - Haircut massage & Spa',
+      description: 'Banguntapan',
+      distance: '5 km',
+      rating: '4.5',
+      image: 'lib/assets/barbershop_haircut_1.jpg',
+    ),
+  ];
 
   final activeOrder = const BookingOrder(
     shopName: 'Masterpiece Barbershop - Haircut styling',

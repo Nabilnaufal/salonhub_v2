@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
+import 'package:salonhub_v2/app/models/barber.dart';
 
 import '../controllers/orders_controller.dart';
 
@@ -76,6 +77,17 @@ class OrdersView extends GetView<OrdersController> {
   }
 
   Widget _buildContent() {
+    if (controller.isHistory) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildTabSwitcher(),
+          const SizedBox(height: 24),
+          ...controller.historyBarbers.map(_buildHistoryItem),
+        ],
+      );
+    }
+
     final order = controller.currentOrder;
 
     return Column(
@@ -107,6 +119,80 @@ class OrdersView extends GetView<OrdersController> {
     );
   }
 
+  Widget _buildHistoryItem(Barber barber) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.asset(
+              barber.image,
+              width: 92,
+              height: 92,
+              fit: BoxFit.cover,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 1),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    barber.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.body3.copyWith(
+                      color: AppColors.blueGray900,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  _historyInfoRow(
+                    icon: 'Map Point.svg',
+                    text: '${barber.description} (${barber.distance})',
+                  ),
+                  const SizedBox(height: 5),
+                  _historyInfoRow(icon: 'Star.svg', text: barber.rating),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _historyInfoRow({required String icon, required String text}) {
+    return Row(
+      children: [
+        SvgPicture.asset(
+          '$_iconPath$icon',
+          width: 16,
+          height: 16,
+          colorFilter: const ColorFilter.mode(
+            AppColors.blueGray500,
+            BlendMode.srcIn,
+          ),
+        ),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.caption1.copyWith(
+              color: AppColors.blueGray500,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildTabSwitcher() {
     return Container(
       height: 38,
@@ -115,10 +201,38 @@ class OrdersView extends GetView<OrdersController> {
         color: AppColors.blueGray200,
         borderRadius: BorderRadius.circular(22),
       ),
-      child: Row(
+      child: Stack(
         children: [
-          _tabButton(label: 'Pesanan aktif', index: 0),
-          _tabButton(label: 'Riwayat', index: 1),
+          AnimatedAlign(
+            duration: const Duration(milliseconds: 280),
+            curve: Curves.easeInOutCubic,
+            alignment: controller.selectedTab.value == 0
+                ? Alignment.centerLeft
+                : Alignment.centerRight,
+            child: FractionallySizedBox(
+              widthFactor: .5,
+              heightFactor: 1,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.teal50,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: AppColors.blueGray300,
+                      blurRadius: 3,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Row(
+            children: [
+              _tabButton(label: 'Pesanan aktif', index: 0),
+              _tabButton(label: 'Riwayat', index: 1),
+            ],
+          ),
         ],
       ),
     );
@@ -131,22 +245,7 @@ class OrdersView extends GetView<OrdersController> {
       child: InkWell(
         onTap: () => controller.selectTab(index),
         borderRadius: BorderRadius.circular(18),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: selected ? AppColors.teal50 : Colors.transparent,
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: selected
-                ? const [
-                    BoxShadow(
-                      color: AppColors.blueGray300,
-                      blurRadius: 3,
-                      offset: Offset(0, 2),
-                    ),
-                  ]
-                : null,
-          ),
+        child: Center(
           child: Text(
             label,
             style: AppTextStyles.body3.copyWith(
