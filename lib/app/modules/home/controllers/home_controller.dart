@@ -62,7 +62,17 @@ class HomeController extends GetxController {
 
   void changeNavigation(int index) {
     if (index == 1) {
-      Get.toNamed(Routes.ORDERS);
+      Get.offNamed(Routes.ORDERS);
+      return;
+    }
+
+    if (index == 2) {
+      Get.offNamed(Routes.CHAT);
+      return;
+    }
+
+    if (index == 3) {
+      Get.offNamed(Routes.PROFILE);
       return;
     }
 

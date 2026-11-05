@@ -4,6 +4,9 @@ part of 'app_pages.dart';
 abstract class Routes {
   Routes._();
   static const HOME = _Paths.HOME;
+  static const ACCOUNT = _Paths.ACCOUNT;
+  static const ABOUT = _Paths.ABOUT;
+  static const HELP = _Paths.HELP;
   static const SPLASH_SCREE = _Paths.SPLASH_SCREE;
   static const INTRO_SCREEN = _Paths.INTRO_SCREEN;
   static const LOGIN_SCREEN = _Paths.LOGIN_SCREEN;
@@ -19,11 +22,18 @@ abstract class Routes {
   static const INVOICE = _Paths.INVOICE;
   static const ORDERS = _Paths.ORDERS;
   static const RATING_REVIEW = _Paths.RATING_REVIEW;
+  static const CHAT = _Paths.CHAT;
+  static const CHAT_ROOM = _Paths.CHAT_ROOM;
+  static const PROFILE = _Paths.PROFILE;
+  static const SECURITY = _Paths.SECURITY;
 }
 
 abstract class _Paths {
   _Paths._();
   static const HOME = '/home';
+  static const ACCOUNT = '/account';
+  static const ABOUT = '/about';
+  static const HELP = '/help';
   static const SPLASH_SCREE = '/splash-scree';
   static const INTRO_SCREEN = '/intro-screen';
   static const LOGIN_SCREEN = '/login-screen';
@@ -39,4 +49,8 @@ abstract class _Paths {
   static const INVOICE = '/invoice';
   static const ORDERS = '/orders';
   static const RATING_REVIEW = '/rating-review';
+  static const CHAT = '/chat';
+  static const CHAT_ROOM = '/chat-room';
+  static const PROFILE = '/profile';
+  static const SECURITY = '/security';
 }
