@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
+import 'package:salonhub_v2/app/widgets/app_outline_button.dart';
 import 'package:salonhub_v2/app/widgets/app_primary_button.dart';
 import 'package:salonhub_v2/app/widgets/app_text_field.dart';
 
@@ -134,7 +135,13 @@ class LoginScreenView extends GetView<LoginScreenController> {
                       label: 'Login',
                       onPressed: controller.login,
                     ),
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 12),
+                    AppOutlineButton(
+                      label: 'Login Mitra',
+                      iconPath: 'lib/assets/icons/Shop.svg',
+                      onPressed: controller.openMitraLogin,
+                    ),
+                    const SizedBox(height: 18),
                     Center(
                       child: Wrap(
                         alignment: WrapAlignment.center,

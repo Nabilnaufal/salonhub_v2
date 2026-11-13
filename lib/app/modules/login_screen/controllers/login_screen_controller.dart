@@ -16,6 +16,10 @@ class LoginScreenController extends GetxController {
     Get.toNamed(Routes.REGISTER_SCREEN);
   }
 
+  void openMitraLogin() {
+    Get.toNamed(Routes.MITRA_MAIN);
+  }
+
   void login() {
     Get.offNamed(Routes.HOME);
   }
