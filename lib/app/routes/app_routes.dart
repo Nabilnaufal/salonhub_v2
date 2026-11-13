@@ -26,6 +26,24 @@ abstract class Routes {
   static const CHAT_ROOM = _Paths.CHAT_ROOM;
   static const PROFILE = _Paths.PROFILE;
   static const SECURITY = _Paths.SECURITY;
+  static const MITRA_LOGIN = _Paths.MITRA_LOGIN;
+  static const MITRA_REGISTER = _Paths.MITRA_REGISTER;
+  static const MITRA_MAIN = _Paths.MITRA_MAIN;
+  static const MITRA_DASHBOARD = _Paths.MITRA_DASHBOARD;
+  static const MITRA_ORDERS = _Paths.MITRA_ORDERS;
+  static const MITRA_ORDER_DETAIL = _Paths.MITRA_ORDER_DETAIL;
+  static const MITRA_SCHEDULE = _Paths.MITRA_SCHEDULE;
+  static const MITRA_SERVICES = _Paths.MITRA_SERVICES;
+  static const MITRA_SERVICE_FORM = _Paths.MITRA_SERVICE_FORM;
+  static const MITRA_TEAM = _Paths.MITRA_TEAM;
+  static const MITRA_TEAM_FORM = _Paths.MITRA_TEAM_FORM;
+  static const MITRA_REVIEWS = _Paths.MITRA_REVIEWS;
+  static const MITRA_EARNINGS = _Paths.MITRA_EARNINGS;
+  static const MITRA_SHOP_PROFILE = _Paths.MITRA_SHOP_PROFILE;
+  static const MITRA_CHAT = _Paths.MITRA_CHAT;
+  static const MITRA_CHAT_ROOM = _Paths.MITRA_CHAT_ROOM;
+  static const MITRA_SETTINGS = _Paths.MITRA_SETTINGS;
+  static const MITRA_PROFILE = _Paths.MITRA_PROFILE;
 }
 
 abstract class _Paths {
@@ -53,4 +71,22 @@ abstract class _Paths {
   static const CHAT_ROOM = '/chat-room';
   static const PROFILE = '/profile';
   static const SECURITY = '/security';
+  static const MITRA_LOGIN = '/mitra-login';
+  static const MITRA_REGISTER = '/mitra-register';
+  static const MITRA_MAIN = '/mitra-main';
+  static const MITRA_DASHBOARD = '/mitra-dashboard';
+  static const MITRA_ORDERS = '/mitra-orders';
+  static const MITRA_ORDER_DETAIL = '/mitra-order-detail';
+  static const MITRA_SCHEDULE = '/mitra-schedule';
+  static const MITRA_SERVICES = '/mitra-services';
+  static const MITRA_SERVICE_FORM = '/mitra-service-form';
+  static const MITRA_TEAM = '/mitra-team';
+  static const MITRA_TEAM_FORM = '/mitra-team-form';
+  static const MITRA_REVIEWS = '/mitra-reviews';
+  static const MITRA_EARNINGS = '/mitra-earnings';
+  static const MITRA_SHOP_PROFILE = '/mitra-shop-profile';
+  static const MITRA_CHAT = '/mitra-chat';
+  static const MITRA_CHAT_ROOM = '/mitra-chat-room';
+  static const MITRA_SETTINGS = '/mitra-settings';
+  static const MITRA_PROFILE = '/mitra-profile';
 }
