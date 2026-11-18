@@ -8,6 +8,8 @@
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
 	<string>Salonhub V2</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>SalonHub membutuhkan akses foto untuk mengunggah avatar, foto toko, layanan, dan barber.</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
