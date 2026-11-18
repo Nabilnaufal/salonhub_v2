@@ -14,6 +14,7 @@ class ReceiptData {
     required this.servicePrice,
     required this.serviceFeePrice,
     required this.totalPrice,
+    this.shopName = 'Barbershop',
   });
 
   final String bookingCode;
@@ -23,6 +24,7 @@ class ReceiptData {
   final int servicePrice;
   final int serviceFeePrice;
   final int totalPrice;
+  final String shopName;
 }
 
 class ReceiptDownloadService {
@@ -31,7 +33,113 @@ class ReceiptDownloadService {
   Future<String> download(ReceiptData receipt) async {
     final bytes = await _buildReceipt(receipt);
     final fileName = 'Bukti_Pembayaran_${receipt.bookingCode}';
+    return _save(bytes, fileName);
+  }
 
+  /// Laporan pendapatan mitra untuk satu periode.
+  Future<String> downloadEarnings({
+    required String shopName,
+    required String periodLabel,
+    required List<
+      ({String code, String date, String customer, int amount, bool paid})
+    >
+    rows,
+  }) async {
+    final document = pw.Document();
+    final primaryColor = PdfColor.fromInt(AppColors.primary900.toARGB32());
+    final mutedColor = PdfColor.fromInt(AppColors.blueGray500.toARGB32());
+    final total = rows.fold(0, (sum, row) => sum + (row.paid ? row.amount : 0));
+
+    document.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(32),
+        build: (context) => [
+          pw.Container(
+            width: double.infinity,
+            padding: const pw.EdgeInsets.all(20),
+            decoration: pw.BoxDecoration(
+              color: primaryColor,
+              borderRadius: pw.BorderRadius.circular(12),
+            ),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(
+                  'SALONHUB MITRA',
+                  style: pw.TextStyle(
+                    color: PdfColors.white,
+                    fontSize: 11,
+                    fontWeight: pw.FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                pw.SizedBox(height: 8),
+                pw.Text(
+                  'Laporan pendapatan',
+                  style: pw.TextStyle(
+                    color: PdfColors.white,
+                    fontSize: 22,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+                pw.SizedBox(height: 4),
+                pw.Text(
+                  '$periodLabel • ${rows.length} transaksi',
+                  style: pw.TextStyle(color: PdfColors.white, fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+          pw.SizedBox(height: 20),
+          pw.Text(
+            shopName,
+            style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+          ),
+          pw.SizedBox(height: 16),
+          pw.TableHelper.fromTextArray(
+            headers: const ['Kode', 'Tanggal', 'Customer', 'Status', 'Total'],
+            data: rows
+                .map(
+                  (row) => [
+                    row.code,
+                    row.date,
+                    row.customer,
+                    row.paid ? 'Lunas' : 'Belum bayar',
+                    _formatRupiah(row.amount),
+                  ],
+                )
+                .toList(),
+            headerStyle: pw.TextStyle(
+              fontSize: 10,
+              fontWeight: pw.FontWeight.bold,
+            ),
+            cellStyle: const pw.TextStyle(fontSize: 10),
+            headerDecoration: pw.BoxDecoration(color: PdfColors.grey300),
+          ),
+          pw.SizedBox(height: 16),
+          pw.Container(height: 1, color: PdfColors.grey400),
+          pw.SizedBox(height: 12),
+          _priceRow(
+            'Total pendapatan lunas',
+            _formatRupiah(total),
+            isEmphasized: true,
+          ),
+          pw.SizedBox(height: 24),
+          pw.Text(
+            'Dibuat otomatis oleh aplikasi SalonHub Mitra.',
+            style: pw.TextStyle(color: mutedColor, fontSize: 10),
+          ),
+        ],
+      ),
+    );
+
+    final bytes = await document.save();
+    final safePeriod = periodLabel.toLowerCase().replaceAll(' ', '-');
+    return _save(bytes, 'Laporan_Pendapatan_$safePeriod');
+  }
+
+  Future<String> _save(Uint8List bytes, String fileName) async {
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
       final location = await _downloadChannel.invokeMethod<String>(
         'saveReceiptPdf',
@@ -105,7 +213,7 @@ class ReceiptDownloadService {
               ),
               pw.SizedBox(height: 24),
               pw.Text(
-                'Masterpiece Barbershop - Haircut styling',
+                receipt.shopName,
                 style: pw.TextStyle(
                   fontSize: 16,
                   fontWeight: pw.FontWeight.bold,

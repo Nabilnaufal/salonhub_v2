@@ -16,6 +16,53 @@ String formatRupiah(int amount) {
   return 'Rp$formatted';
 }
 
+const _monthShort = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'Mei',
+  'Jun',
+  'Jul',
+  'Agu',
+  'Sep',
+  'Okt',
+  'Nov',
+  'Des',
+];
+
+/// "Hari ini, 15 Jan 2026" / "Kemarin, 14 Jan 2026" / "12 Jan 2026".
+String formatDateLabel(DateTime date) {
+  final local = date.toLocal();
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final day = DateTime(local.year, local.month, local.day);
+  final diff = today.difference(day).inDays;
+  final label = '${local.day} ${_monthShort[local.month - 1]} ${local.year}';
+
+  if (diff == 0) return 'Hari ini, $label';
+  if (diff == 1) return 'Kemarin, $label';
+  return label;
+}
+
+/// "2 hari lalu".
+String formatRelativeDate(DateTime date) {
+  final days = DateTime.now().difference(date.toLocal()).inDays;
+  if (days <= 0) return 'Hari ini';
+  if (days == 1) return '1 hari lalu';
+  if (days < 7) return '$days hari lalu';
+  if (days < 30) return '${days ~/ 7} minggu lalu';
+  return '${days ~/ 30} bulan lalu';
+}
+
+/// "08.00 WIB".
+String formatTimeLabel(DateTime date) {
+  final local = date.toLocal();
+  final hour = local.hour.toString().padLeft(2, '0');
+  final minute = local.minute.toString().padLeft(2, '0');
+  return '$hour.$minute WIB';
+}
+
 enum MitraOrderStatus { baru, menunggu, diproses, selesai, dibatalkan }
 
 extension MitraOrderStatusX on MitraOrderStatus {
@@ -122,6 +169,7 @@ class MitraOrder {
     required this.paymentMethod,
     required this.note,
     required this.isPaid,
+    this.scheduledAt,
   });
 
   final String id;
@@ -137,6 +185,7 @@ class MitraOrder {
   final String paymentMethod;
   final String note;
   final bool isPaid;
+  final DateTime? scheduledAt;
 
   int get totalPrice =>
       services.fold(0, (total, service) => total + service.price);
@@ -162,6 +211,7 @@ class MitraOrder {
       paymentMethod: paymentMethod,
       note: note,
       isPaid: isPaid,
+      scheduledAt: scheduledAt,
     );
   }
 }
@@ -186,6 +236,19 @@ class MitraService {
   final String image;
   final bool isActive;
   final int totalBookings;
+
+  factory MitraService.fromMap(Map<String, dynamic> map) {
+    return MitraService(
+      id: map['id'] as String,
+      name: map['name'] as String,
+      description: map['description'] as String? ?? '',
+      price: (map['price'] as num).toInt(),
+      durationMinutes: (map['duration_minutes'] as num).toInt(),
+      image: map['image_url'] as String? ?? '',
+      isActive: map['is_active'] as bool? ?? true,
+      totalBookings: (map['total_bookings'] as num?)?.toInt() ?? 0,
+    );
+  }
 
   MitraService copyWith({
     String? name,
@@ -229,6 +292,21 @@ class MitraTeamMember {
   final int todayBookings;
   final String shift;
 
+  factory MitraTeamMember.fromMap(Map<String, dynamic> map) {
+    final start = (map['shift_start'] as String?)?.substring(0, 5) ?? '';
+    final end = (map['shift_end'] as String?)?.substring(0, 5) ?? '';
+    return MitraTeamMember(
+      id: map['id'] as String,
+      name: map['name'] as String,
+      role: map['role'] as String? ?? 'Barber',
+      rating: (map['rating'] as num?)?.toDouble() ?? 0,
+      image: map['image_url'] as String? ?? '',
+      isActive: map['is_active'] as bool? ?? true,
+      todayBookings: 0,
+      shift: start.isEmpty ? 'Tanpa shift' : '$start - $end',
+    );
+  }
+
   MitraTeamMember copyWith({
     String? name,
     String? role,
@@ -258,7 +336,6 @@ class MitraReview {
     required this.comment,
     required this.dateLabel,
     this.reply,
-    this.serviceName = 'Basic haircut',
   });
 
   final String id;
@@ -268,7 +345,21 @@ class MitraReview {
   final String comment;
   final String dateLabel;
   final String? reply;
-  final String serviceName;
+
+  factory MitraReview.fromMap(Map<String, dynamic> map) {
+    final profile = map['public_profiles'] as Map<String, dynamic>?;
+    return MitraReview(
+      id: map['id'] as String,
+      customerName: profile?['full_name'] as String? ?? 'Customer',
+      customerImage: profile?['avatar_url'] as String? ?? '',
+      rating: (map['rating'] as num?)?.toDouble() ?? 0,
+      comment: map['comment'] as String? ?? '',
+      dateLabel: formatRelativeDate(
+        DateTime.parse(map['created_at'] as String),
+      ),
+      reply: map['reply'] as String?,
+    );
+  }
 
   MitraReview copyWith({String? reply}) {
     return MitraReview(
@@ -279,7 +370,6 @@ class MitraReview {
       comment: comment,
       dateLabel: dateLabel,
       reply: reply ?? this.reply,
-      serviceName: serviceName,
     );
   }
 }
@@ -298,10 +388,11 @@ class MitraOpeningHour {
 
 class MitraShop {
   const MitraShop({
+    this.id = '',
+    this.slug = '',
     required this.name,
     required this.description,
     required this.address,
-    required this.distanceLabel,
     required this.image,
     required this.rating,
     required this.reviewCount,
@@ -309,12 +400,16 @@ class MitraShop {
     required this.facilities,
     required this.gallery,
     required this.openingHours,
+    this.latitude,
+    this.longitude,
+    this.isOpen = true,
   });
 
+  final String id;
+  final String slug;
   final String name;
   final String description;
   final String address;
-  final String distanceLabel;
   final String image;
   final double rating;
   final int reviewCount;
@@ -322,12 +417,61 @@ class MitraShop {
   final List<String> facilities;
   final List<String> gallery;
   final List<MitraOpeningHour> openingHours;
+  final double? latitude;
+  final double? longitude;
+  final bool isOpen;
+
+  factory MitraShop.fromMap(
+    Map<String, dynamic> map, {
+    List<Map<String, dynamic>> hours = const [],
+  }) {
+    const dayNames = [
+      'Senin',
+      'Selasa',
+      'Rabu',
+      'Kamis',
+      'Jumat',
+      'Sabtu',
+      'Minggu',
+    ];
+
+    String label(Map<String, dynamic> row) {
+      if (row['is_closed'] == true) return 'Tutup';
+      final open = (row['open_time'] as String?)?.substring(0, 5) ?? '-';
+      final close = (row['close_time'] as String?)?.substring(0, 5) ?? '-';
+      return '${open.replaceAll(':', '.')} - ${close.replaceAll(':', '.')}';
+    }
+
+    return MitraShop(
+      id: map['id'] as String,
+      slug: map['slug'] as String? ?? '',
+      name: map['name'] as String,
+      description: map['description'] as String? ?? '',
+      address: map['address'] as String? ?? '',
+      image: map['image_url'] as String? ?? '',
+      rating: ((map['rating'] as num?)?.toDouble()) ?? 0,
+      reviewCount: (map['review_count'] as num?)?.toInt() ?? 0,
+      phone: map['phone'] as String? ?? '',
+      facilities: (map['facilities'] as List?)?.cast<String>() ?? const [],
+      gallery: (map['gallery'] as List?)?.cast<String>() ?? const [],
+      latitude: (map['latitude'] as num?)?.toDouble(),
+      longitude: (map['longitude'] as num?)?.toDouble(),
+      isOpen: map['is_open'] as bool? ?? true,
+      openingHours: [
+        for (final row in hours)
+          MitraOpeningHour(
+            day: dayNames[(row['day_of_week'] as num).toInt()],
+            hours: label(row),
+            isClosed: row['is_closed'] == true,
+          ),
+      ],
+    );
+  }
 
   MitraShop copyWith({
     String? name,
     String? description,
     String? address,
-    String? distanceLabel,
     String? image,
     double? rating,
     int? reviewCount,
@@ -335,12 +479,16 @@ class MitraShop {
     List<String>? facilities,
     List<String>? gallery,
     List<MitraOpeningHour>? openingHours,
+    bool? isOpen,
+    double? latitude,
+    double? longitude,
   }) {
     return MitraShop(
+      id: id,
+      slug: slug,
       name: name ?? this.name,
       description: description ?? this.description,
       address: address ?? this.address,
-      distanceLabel: distanceLabel ?? this.distanceLabel,
       image: image ?? this.image,
       rating: rating ?? this.rating,
       reviewCount: reviewCount ?? this.reviewCount,
@@ -348,6 +496,9 @@ class MitraShop {
       facilities: facilities ?? this.facilities,
       gallery: gallery ?? this.gallery,
       openingHours: openingHours ?? this.openingHours,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      isOpen: isOpen ?? this.isOpen,
     );
   }
 }
