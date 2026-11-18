@@ -42,7 +42,7 @@ class MitraScheduleView extends GetView<MitraScheduleController> {
                       ),
                     ),
                     OutlinedButton.icon(
-                      onPressed: controller.editOpeningHours,
+                      onPressed: () => controller.editOpeningHours(context),
                       icon: SvgPicture.asset(
                         'lib/assets/icons/setting-4.svg',
                         width: 15,
@@ -130,7 +130,7 @@ class MitraScheduleView extends GetView<MitraScheduleController> {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: controller.days.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           final day = controller.days[index];
           final isSelected = controller.selectedDay.value == index;

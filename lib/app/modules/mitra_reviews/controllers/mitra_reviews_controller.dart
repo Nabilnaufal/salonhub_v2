@@ -8,6 +8,12 @@ class MitraReviewsController extends GetxController {
 
   final selectedRating = Rxn<int>();
 
+  @override
+  void onInit() {
+    data.load();
+    super.onInit();
+  }
+
   List<MitraReview> get filteredReviews {
     final rating = selectedRating.value;
     if (rating == null) {
@@ -68,7 +74,7 @@ class MitraReviewsController extends GetxController {
 
     final reply = result?.trim();
     if (reply != null && reply.isNotEmpty) {
-      data.replyToReview(review.id, reply);
+      await data.replyToReview(review.id, reply);
     }
   }
 }

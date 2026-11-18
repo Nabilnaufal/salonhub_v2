@@ -10,6 +10,12 @@ class MitraTeamController extends GetxController {
   /// 0 = semua, 1 = aktif, 2 = nonaktif.
   final selectedFilter = 0.obs;
 
+  @override
+  void onInit() {
+    data.load();
+    super.onInit();
+  }
+
   List<MitraTeamMember> get filteredMembers {
     switch (selectedFilter.value) {
       case 1:
@@ -24,9 +30,7 @@ class MitraTeamController extends GetxController {
   int get activeCount => data.team.where((member) => member.isActive).length;
 
   double get averageRating {
-    if (data.team.isEmpty) {
-      return 0;
-    }
+    if (data.team.isEmpty) return 0;
     final total = data.team.fold<double>(
       0,
       (sum, member) => sum + member.rating,

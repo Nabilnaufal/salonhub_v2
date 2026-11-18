@@ -76,10 +76,11 @@ class MitraLoginView extends GetView<MitraLoginController> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const AppTextField(
+                    AppTextField(
                       label: 'Email atau nomor WhatsApp',
                       hintText: 'mitra@salonhub.id',
                       iconPath: 'lib/assets/icons/Vector.svg',
+                      controller: controller.emailController,
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
                     ),
@@ -90,6 +91,7 @@ class MitraLoginView extends GetView<MitraLoginController> {
                         hintText: '********',
                         iconPath: 'lib/assets/icons/Key Minimalistic.svg',
                         obscureText: controller.isPasswordObscured.value,
+                        controller: controller.passwordController,
                         textInputAction: TextInputAction.done,
                         suffixIcon: IconButton(
                           onPressed: controller.togglePasswordVisibility,

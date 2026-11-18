@@ -11,6 +11,12 @@ class MitraOrdersController extends GetxController {
   final searchQuery = ''.obs;
   final selectedStatus = Rxn<MitraOrderStatus>();
 
+  @override
+  void onInit() {
+    data.load();
+    super.onInit();
+  }
+
   List<MitraOrder> get filteredOrders {
     var result = data.orders.toList();
     final status = selectedStatus.value;

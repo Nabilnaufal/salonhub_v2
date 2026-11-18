@@ -6,6 +6,7 @@ import 'package:salonhub_v2/app/models/mitra.dart';
 import 'package:salonhub_v2/app/modules/mitra_services/controllers/mitra_services_controller.dart';
 import 'package:salonhub_v2/app/widgets/mitra_empty_state.dart';
 import 'package:salonhub_v2/app/widgets/mitra_page_header.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 
 class MitraServicesView extends GetView<MitraServicesController> {
   const MitraServicesView({super.key});
@@ -78,7 +79,7 @@ class MitraServicesView extends GetView<MitraServicesController> {
                 return ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
                   itemCount: services.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  separatorBuilder: (_, _) => const SizedBox(height: 10),
                   itemBuilder: (context, index) {
                     return _serviceCard(services[index]);
                   },
@@ -131,7 +132,7 @@ class MitraServicesView extends GetView<MitraServicesController> {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: Image.asset(
+                child: AppPhoto(
                   service.image,
                   width: 58,
                   height: 58,

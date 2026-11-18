@@ -1,79 +1,124 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'package:salonhub_v2/app/data/mitra_data_service.dart';
 import 'package:salonhub_v2/app/routes/app_pages.dart';
+import 'package:salonhub_v2/app/services/catalog_service.dart';
 
 class MitraChatController extends GetxController {
+  final data = Get.find<MitraDataService>();
+  final catalog = Get.find<CatalogService>();
+  SupabaseClient get _client => Supabase.instance.client;
+
   final searchController = TextEditingController();
   final searchQuery = ''.obs;
+  final isLoading = false.obs;
 
   final conversations =
       <
-        ({
-          String name,
-          String message,
-          String time,
-          String image,
-          int unread,
-          bool isOnline,
-        })
-      >[
-        (
-          name: 'Alan Cartwright',
-          message: 'Bang, bisa potong jam 8 pagi?',
-          time: '08.12',
-          image: 'lib/assets/barbershop_haircut_3.jpg',
-          unread: 2,
-          isOnline: true,
-        ),
-        (
-          name: 'Robert Gleichner',
-          message: 'Warna coklat ash ya, jangan terlalu terang.',
-          time: '09.04',
-          image: 'lib/assets/barbershop_haircut_1.jpg',
-          unread: 1,
-          isOnline: true,
-        ),
-        (
-          name: 'Sergio Wilderman',
-          message: 'Oke, nanti saya datang tepat waktu.',
-          time: '09.42',
-          image: 'lib/assets/barbershop_interior_2.jpg',
-          unread: 0,
-          isOnline: false,
-        ),
-        (
-          name: 'Nadia Puspita',
-          message: 'Terima kasih hasilnya rapi banget!',
-          time: '13.20',
-          image: 'lib/assets/barbershop_haircut_2.jpg',
-          unread: 0,
-          isOnline: false,
-        ),
-        (
-          name: 'Bagas Pratama',
-          message: 'Bisa reschedule ke sore?',
-          time: 'Kemarin',
-          image: 'lib/assets/barbershop_exterior_1.jpg',
-          unread: 0,
-          isOnline: false,
-        ),
-      ];
+            ({
+              String id,
+              String name,
+              String message,
+              String time,
+              String image,
+              int unread,
+              bool isOnline,
+              String phone,
+            })
+          >[]
+          .obs;
+
+  @override
+  void onInit() {
+    load();
+    super.onInit();
+  }
+
+  Future<void> load() async {
+    final shopId = data.shopId;
+    if (shopId == null) {
+      await data.load();
+    }
+    final currentShopId = data.shopId;
+    if (currentShopId == null) return;
+
+    isLoading.value = true;
+    try {
+      final rows = await _client
+          .from('conversations')
+          .select()
+          .eq('shop_id', currentShopId)
+          .order('last_message_at', ascending: false);
+
+      final unread = await catalog.unreadCounts();
+      final ids = rows.map((row) => row['customer_id']).toSet().toList();
+      final profiles = ids.isEmpty
+          ? const <Map<String, dynamic>>[]
+          : await _client
+                .from('public_profiles')
+                .select('id, full_name, avatar_url')
+                .inFilter('id', ids);
+      final byId = {for (final row in profiles) row['id'] as String: row};
+
+      // Nomor telepon hanya terbaca untuk customer yang pernah booking.
+      final phoneRows = ids.isEmpty
+          ? const <Map<String, dynamic>>[]
+          : await _client
+                .from('profiles')
+                .select('id, phone')
+                .inFilter('id', ids);
+      final phoneById = {
+        for (final row in phoneRows)
+          row['id'] as String: row['phone'] as String?,
+      };
+
+      conversations.assignAll(
+        rows.map((row) {
+          final profile = byId[row['customer_id']];
+          final lastAt = DateTime.tryParse(
+            row['last_message_at'] as String? ?? '',
+          );
+          return (
+            id: row['id'] as String,
+            name: profile?['full_name'] as String? ?? 'Customer',
+            message: (row['last_message'] as String?)?.isNotEmpty == true
+                ? row['last_message'] as String
+                : 'Mulai percakapan',
+            time: lastAt == null
+                ? ''
+                : '${lastAt.toLocal().hour.toString().padLeft(2, '0')}.'
+                      '${lastAt.toLocal().minute.toString().padLeft(2, '0')}',
+            image: profile?['avatar_url'] as String? ?? '',
+            unread: unread[row['id']] ?? 0,
+            isOnline: false,
+            phone: phoneById[row['customer_id']] ?? '',
+          );
+        }),
+      );
+    } catch (_) {
+      // Daftar kosong bila gagal memuat.
+    } finally {
+      isLoading.value = false;
+    }
+  }
 
   List<
     ({
+      String id,
       String name,
       String message,
       String time,
       String image,
       int unread,
       bool isOnline,
+      String phone,
     })
   >
   get filteredConversations {
     final query = searchQuery.value.trim().toLowerCase();
-    if (query.isEmpty) {
-      return conversations;
-    }
+    if (query.isEmpty) return conversations;
     return conversations
         .where(
           (conversation) =>
@@ -87,11 +132,23 @@ class MitraChatController extends GetxController {
     searchQuery.value = value;
   }
 
-  void openConversation(String name, String image) {
-    Get.toNamed(
+  Future<void> openConversation(
+    String id,
+    String name,
+    String image, {
+    String phone = '',
+  }) async {
+    await catalog.markConversationRead(id);
+    await Get.toNamed(
       Routes.MITRA_CHAT_ROOM,
-      arguments: {'name': name, 'image': image},
+      arguments: {
+        'conversationId': id,
+        'name': name,
+        'image': image,
+        'phone': phone,
+      },
     );
+    load();
   }
 
   @override

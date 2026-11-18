@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
+import 'package:salonhub_v2/app/widgets/chat_message_body.dart';
 import 'package:salonhub_v2/app/modules/mitra_chat_room/controllers/mitra_chat_room_controller.dart';
 
 class MitraChatRoomView extends GetView<MitraChatRoomController> {
@@ -171,9 +172,10 @@ class MitraChatRoomView extends GetView<MitraChatRoomController> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(
-              message.text,
-              style: AppTextStyles.body3.copyWith(
+            ChatMessageBody(
+              text: message.text,
+              textColor: isMine ? AppColors.white : AppColors.coolGray800,
+              textStyle: AppTextStyles.body3.copyWith(
                 color: isMine ? AppColors.white : AppColors.coolGray800,
                 height: 1.4,
               ),
@@ -232,14 +234,7 @@ class MitraChatRoomView extends GetView<MitraChatRoomController> {
       child: Row(
         children: [
           InkWell(
-            onTap: () {
-              Get.snackbar(
-                'Lampiran',
-                'Fitur lampiran akan tersedia pada tahap berikutnya.',
-                snackPosition: SnackPosition.BOTTOM,
-                margin: const EdgeInsets.all(16),
-              );
-            },
+            onTap: controller.sendPhoto,
             borderRadius: BorderRadius.circular(10),
             child: Container(
               width: 38,

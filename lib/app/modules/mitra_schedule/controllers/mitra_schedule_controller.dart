@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:salonhub_v2/app/data/mitra_data_service.dart';
 import 'package:salonhub_v2/app/models/mitra.dart';
 import 'package:salonhub_v2/app/routes/app_pages.dart';
+import 'package:salonhub_v2/app/widgets/opening_hours_editor.dart';
 
 class MitraScheduleController extends GetxController {
   final data = Get.find<MitraDataService>();
@@ -19,8 +20,7 @@ class MitraScheduleController extends GetxController {
     'Min',
   ];
 
-  final DateTime baseDate = DateTime(2026, 1, 15);
-
+  late final DateTime baseDate;
   final slots = const [
     '08.00',
     '08.30',
@@ -40,13 +40,29 @@ class MitraScheduleController extends GetxController {
     '19.00',
   ];
 
+  @override
+  void onInit() {
+    final now = DateTime.now();
+    baseDate = DateTime(now.year, now.month, now.day);
+    data.load();
+    super.onInit();
+  }
+
   List<DateTime> get days =>
       List.generate(7, (index) => baseDate.add(Duration(days: index)));
 
   String weekdayOf(DateTime date) => _weekdayLabels[date.weekday - 1];
 
-  List<MitraOrder> get selectedOrders =>
-      selectedDay.value == 0 ? data.todayOrders : const [];
+  List<MitraOrder> get selectedOrders {
+    final day = days[selectedDay.value];
+    return data.orders.where((order) {
+      final at = order.scheduledAt;
+      return at != null &&
+          at.year == day.year &&
+          at.month == day.month &&
+          at.day == day.day;
+    }).toList();
+  }
 
   int get bookedSlots => selectedOrders.length;
 
@@ -69,21 +85,122 @@ class MitraScheduleController extends GetxController {
     Get.toNamed(Routes.MITRA_ORDER_DETAIL, arguments: order.id);
   }
 
-  void addWalkIn(String time) {
-    Get.snackbar(
-      'Tambah pesanan',
-      'Slot $time siap diisi pesanan walk-in.',
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
+  /// Tambah pesanan walk-in (tanpa akun customer) lewat RPC.
+  Future<void> addWalkIn(String time) async {
+    final shopId = data.shopId;
+    if (shopId == null) return;
+    if (data.services.where((service) => service.isActive).isEmpty) {
+      Get.snackbar(
+        'Belum ada layanan',
+        'Tambahkan layanan aktif dulu di menu Layanan.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
+      return;
+    }
+
+    final nameController = TextEditingController();
+    final selectedServices = <String>{data.services.first.id};
+    final result = await Get.dialog<bool>(
+      StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text('Walk-in $time'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: nameController,
+                  autofocus: true,
+                  decoration: const InputDecoration(labelText: 'Nama customer'),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Layanan',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 4),
+                ...data.services
+                    .where((service) => service.isActive)
+                    .map(
+                      (service) => CheckboxListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        controlAffinity: ListTileControlAffinity.leading,
+                        value: selectedServices.contains(service.id),
+                        title: Text(
+                          '${service.name} • ${formatRupiah(service.price)}',
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        onChanged: (value) => setState(() {
+                          if (value == true) {
+                            selectedServices.add(service.id);
+                          } else if (selectedServices.length > 1) {
+                            selectedServices.remove(service.id);
+                          }
+                        }),
+                      ),
+                    ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: Get.back, child: const Text('Batal')),
+            FilledButton(
+              onPressed: () => Get.back(result: true),
+              child: const Text('Simpan'),
+            ),
+          ],
+        ),
+      ),
     );
+
+    final name = nameController.text.trim();
+    nameController.dispose();
+    if (result != true) return;
+    if (name.isEmpty) {
+      Get.snackbar(
+        'Nama kosong',
+        'Isi nama customer walk-in.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
+      return;
+    }
+
+    final day = days[selectedDay.value];
+    final parts = time.split('.');
+    final scheduledAt = DateTime(
+      day.year,
+      day.month,
+      day.day,
+      int.parse(parts[0]),
+      int.parse(parts[1]),
+    );
+
+    try {
+      await data.addWalkIn(
+        scheduledAt: scheduledAt,
+        customerName: name,
+        serviceIds: selectedServices.toList(),
+      );
+      Get.snackbar(
+        'Walk-in ditambahkan',
+        '$name masuk ke jadwal $time.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
+    } catch (_) {
+      Get.snackbar(
+        'Gagal menambah',
+        'Slot $time mungkin sudah terisi.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
+    }
   }
 
-  void editOpeningHours() {
-    Get.snackbar(
-      'Jam operasional',
-      'Pengaturan jam buka toko akan tersedia di sini.',
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
-    );
-  }
+  Future<void> editOpeningHours(BuildContext context) =>
+      showOpeningHoursEditor(context, data);
 }

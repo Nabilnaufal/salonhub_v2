@@ -151,7 +151,7 @@ class MitraOrdersView extends GetView<MitraOrdersController> {
                 return ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 2, 16, 24),
                   itemCount: orders.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  separatorBuilder: (_, _) => const SizedBox(height: 10),
                   itemBuilder: (context, index) {
                     final order = orders[index];
                     return MitraOrderCard(

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:salonhub_v2/app/data/mitra_data_service.dart';
+import 'package:salonhub_v2/app/data/receipt_download_service.dart';
 import 'package:salonhub_v2/app/models/mitra.dart';
 import 'package:salonhub_v2/app/routes/app_pages.dart';
+import 'package:salonhub_v2/app/services/external_actions.dart';
 
 class MitraOrderDetailController extends GetxController {
   final data = Get.find<MitraDataService>();
@@ -14,14 +16,13 @@ class MitraOrderDetailController extends GetxController {
   @override
   void onInit() {
     final arguments = Get.arguments;
-    orderCode = arguments is String
-        ? arguments
-        : (data.orders.isNotEmpty ? data.orders.first.id : '');
+    orderCode = arguments is String ? arguments : '';
+    data.load();
     super.onInit();
   }
 
-  void acceptOrder() {
-    _setStatus(MitraOrderStatus.menunggu);
+  Future<void> acceptOrder() async {
+    await _setStatus(MitraOrderStatus.menunggu);
     Get.snackbar(
       'Pesanan diterima',
       'Customer akan melihat status pesanannya menjadi "Menunggu".',
@@ -30,8 +31,8 @@ class MitraOrderDetailController extends GetxController {
     );
   }
 
-  void startOrder() {
-    _setStatus(MitraOrderStatus.diproses);
+  Future<void> startOrder() async {
+    await _setStatus(MitraOrderStatus.diproses);
     Get.snackbar(
       'Layanan dimulai',
       'Status pesanan berubah menjadi "Diproses".',
@@ -40,8 +41,8 @@ class MitraOrderDetailController extends GetxController {
     );
   }
 
-  void finishOrder() {
-    _setStatus(MitraOrderStatus.selesai);
+  Future<void> finishOrder() async {
+    await _setStatus(MitraOrderStatus.selesai);
     Get.snackbar(
       'Pesanan selesai',
       'Terima kasih, pesanan sudah ditandai selesai.',
@@ -72,50 +73,77 @@ class MitraOrderDetailController extends GetxController {
     );
 
     if (confirmed == true) {
-      _setStatus(MitraOrderStatus.dibatalkan);
+      await _setStatus(MitraOrderStatus.dibatalkan);
     }
   }
 
   void openChat() {
+    Get.toNamed(Routes.MITRA_CHAT);
+  }
+
+  Future<void> callCustomer() async {
+    final phone = order?.customerPhone ?? '';
+    if (phone.isEmpty) {
+      Get.snackbar(
+        'Nomor tidak tersedia',
+        'Customer walk-in tidak punya nomor telepon.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
+      return;
+    }
+    try {
+      await callNumber(phone);
+    } catch (_) {
+      Get.snackbar(
+        'Telepon',
+        'Tidak bisa membuka aplikasi telepon.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
+    }
+  }
+
+  final _receiptService = ReceiptDownloadService();
+
+  Future<void> printReceipt() async {
     final currentOrder = order;
-    if (currentOrder == null) {
-      return;
+    if (currentOrder == null) return;
+
+    try {
+      final location = await _receiptService.download(
+        ReceiptData(
+          bookingCode: currentOrder.id,
+          appointmentDateLabel:
+              '${currentOrder.dateLabel} - ${currentOrder.timeLabel}',
+          paymentMethodName: currentOrder.paymentMethod.isEmpty
+              ? 'Cash'
+              : currentOrder.paymentMethod,
+          serviceName: currentOrder.serviceSummary,
+          servicePrice: currentOrder.totalPrice,
+          serviceFeePrice: 0,
+          totalPrice: currentOrder.totalPrice,
+          shopName: data.shop.value.name,
+        ),
+      );
+      Get.snackbar(
+        'Struk tersimpan',
+        'PDF pesanan ${currentOrder.id} disimpan di $location.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
+    } catch (_) {
+      Get.snackbar(
+        'Unduh gagal',
+        'Struk belum dapat disimpan. Coba lagi.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
     }
-    Get.toNamed(
-      Routes.MITRA_CHAT_ROOM,
-      arguments: {
-        'name': currentOrder.customerName,
-        'image': currentOrder.customerImage,
-      },
-    );
   }
 
-  void callCustomer() {
-    final currentOrder = order;
-    if (currentOrder == null) {
-      return;
-    }
-    Get.snackbar(
-      'Telepon customer',
-      'Menghubungi ${currentOrder.customerPhone}...',
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
-    );
-  }
-
-  void printReceipt() {
-    Get.snackbar(
-      'Struk pesanan',
-      'Struk ${order?.id} disiapkan untuk diunduh.',
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
-    );
-  }
-
-  void _setStatus(MitraOrderStatus status) {
-    if (orderCode.isEmpty) {
-      return;
-    }
-    data.updateOrderStatus(orderCode, status);
+  Future<void> _setStatus(MitraOrderStatus status) async {
+    if (orderCode.isEmpty) return;
+    await data.updateOrderStatus(orderCode, status);
   }
 }

@@ -8,6 +8,7 @@ import 'package:salonhub_v2/app/routes/app_pages.dart';
 import 'package:salonhub_v2/app/widgets/mitra_order_card.dart';
 import 'package:salonhub_v2/app/widgets/mitra_section_header.dart';
 import 'package:salonhub_v2/app/widgets/mitra_stat_card.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 
 class MitraDashboardView extends GetView<MitraDashboardController> {
   const MitraDashboardView({super.key, this.onOpenOrders, this.onOpenSchedule});
@@ -143,7 +144,7 @@ class MitraDashboardView extends GetView<MitraDashboardController> {
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(10),
-            child: Image.asset(controller.shop.image, fit: BoxFit.cover),
+            child: AppPhoto(controller.shop.image, fit: BoxFit.cover),
           ),
         ),
         const SizedBox(width: 10),

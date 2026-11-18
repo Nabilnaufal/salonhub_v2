@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:salonhub_v2/app/data/mitra_data_service.dart';
 import 'package:salonhub_v2/app/routes/app_pages.dart';
@@ -16,11 +15,6 @@ class MitraMainController extends GetxController {
   }
 
   void openNotifications() {
-    Get.snackbar(
-      'Notifikasi',
-      'Tidak ada notifikasi baru saat ini.',
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
-    );
+    changeTab(1);
   }
 }

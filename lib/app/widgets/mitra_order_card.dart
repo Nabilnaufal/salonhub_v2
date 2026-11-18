@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
 import 'package:salonhub_v2/app/models/mitra.dart';
 import 'package:salonhub_v2/app/widgets/mitra_status_chip.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 
 class MitraOrderCard extends StatelessWidget {
   const MitraOrderCard({super.key, required this.order, required this.onTap});
@@ -38,10 +39,7 @@ class MitraOrderCard extends StatelessWidget {
                       border: Border.all(color: AppColors.primary100, width: 2),
                     ),
                     child: ClipOval(
-                      child: Image.asset(
-                        order.customerImage,
-                        fit: BoxFit.cover,
-                      ),
+                      child: AppPhoto(order.customerImage, fit: BoxFit.cover),
                     ),
                   ),
                   const SizedBox(width: 10),

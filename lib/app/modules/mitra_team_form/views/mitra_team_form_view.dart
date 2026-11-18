@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
 import 'package:salonhub_v2/app/modules/mitra_team_form/controllers/mitra_team_form_controller.dart';
 import 'package:salonhub_v2/app/widgets/app_primary_button.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 import 'package:salonhub_v2/app/widgets/app_text_field.dart';
 import 'package:salonhub_v2/app/widgets/mitra_page_header.dart';
 
@@ -106,14 +107,7 @@ class MitraTeamFormView extends GetView<MitraTeamFormController> {
 
   Widget _buildPhotoPicker() {
     return InkWell(
-      onTap: () {
-        Get.snackbar(
-          'Foto barber',
-          'Pemilih foto akan tersedia pada tahap berikutnya.',
-          snackPosition: SnackPosition.BOTTOM,
-          margin: const EdgeInsets.all(16),
-        );
-      },
+      onTap: controller.pickImage,
       borderRadius: BorderRadius.circular(14),
       child: Container(
         height: 96,
@@ -125,18 +119,30 @@ class MitraTeamFormView extends GetView<MitraTeamFormController> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: const BoxDecoration(
-                color: AppColors.primary50,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.add_a_photo_outlined,
-                size: 19,
-                color: AppColors.primary900,
-              ),
+            Obx(
+              () => controller.image.value.isEmpty
+                  ? Container(
+                      width: 38,
+                      height: 38,
+                      decoration: const BoxDecoration(
+                        color: AppColors.primary50,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.add_a_photo_outlined,
+                        size: 19,
+                        color: AppColors.primary900,
+                      ),
+                    )
+                  : ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: AppPhoto(
+                        controller.image.value,
+                        width: 76,
+                        height: 76,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
             ),
             const SizedBox(width: 10),
             Flexible(

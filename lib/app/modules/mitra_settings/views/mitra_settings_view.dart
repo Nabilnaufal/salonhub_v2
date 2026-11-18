@@ -27,7 +27,7 @@ class MitraSettingsView extends GetView<MitraSettingsController> {
                 iconPath: 'lib/assets/icons/Calendar Mark.svg',
                 title: 'Jam operasional',
                 subtitle: 'Atur jam buka setiap hari',
-                onTap: controller.openOpeningHours,
+                onTap: () => controller.openOpeningHours(context),
               ),
               _SettingRow(
                 iconPath: 'lib/assets/icons/Wallet Money.svg',

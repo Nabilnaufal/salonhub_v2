@@ -1,89 +1,164 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:salonhub_v2/app/data/mitra_data_service.dart';
 import 'package:salonhub_v2/app/routes/app_pages.dart';
+import 'package:salonhub_v2/app/widgets/opening_hours_editor.dart';
+import 'package:salonhub_v2/app/services/auth_service.dart';
 
 class MitraSettingsController extends GetxController {
+  final data = Get.find<MitraDataService>();
+  final auth = Get.find<AuthService>();
+
   final orderNotifications = true.obs;
   final soundNotifications = true.obs;
   final promoNotifications = false.obs;
 
-  void toggleOrderNotifications() {
+  @override
+  void onInit() {
+    final profile = auth.profile.value;
+    if (profile != null) {
+      orderNotifications.value = profile.orderNotifications;
+      soundNotifications.value = profile.soundNotifications;
+      promoNotifications.value = profile.promoNotifications;
+    }
+    data.load();
+    super.onInit();
+  }
+
+  Future<void> toggleOrderNotifications() async {
     orderNotifications.toggle();
+    await _savePrefs();
   }
 
-  void toggleSoundNotifications() {
+  Future<void> toggleSoundNotifications() async {
     soundNotifications.toggle();
+    await _savePrefs();
   }
 
-  void togglePromoNotifications() {
+  Future<void> togglePromoNotifications() async {
     promoNotifications.toggle();
+    await _savePrefs();
+  }
+
+  Future<void> _savePrefs() async {
+    try {
+      await auth.updateNotificationPrefs(
+        orderNotifications: orderNotifications.value,
+        soundNotifications: soundNotifications.value,
+        promoNotifications: promoNotifications.value,
+      );
+    } catch (_) {
+      Get.snackbar(
+        'Pengaturan notifikasi',
+        'Perubahan belum tersimpan. Coba lagi.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
+    }
   }
 
   void openShopProfile() {
     Get.toNamed(Routes.MITRA_SHOP_PROFILE);
   }
 
-  void openOpeningHours() {
-    Get.bottomSheet(
-      _sheet(
-        title: 'Jam operasional',
-        child: Column(
-          children: const [
-            _HourRow(day: 'Senin - Kamis', hours: '09.00 - 20.00'),
-            _HourRow(day: 'Jumat - Sabtu', hours: '09.00 - 21.00'),
-            _HourRow(day: 'Minggu', hours: '10.00 - 18.00'),
-          ],
-        ),
-      ),
-    );
-  }
+  Future<void> openOpeningHours(BuildContext context) =>
+      showOpeningHoursEditor(context, data);
 
   void openPaymentMethods() {
     Get.bottomSheet(
       _sheet(
         title: 'Metode pembayaran',
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: const [
-            _PaymentRow(name: 'QRIS', note: 'Aktif'),
-            _PaymentRow(name: 'Transfer BCA', note: 'Aktif'),
-            _PaymentRow(name: 'Transfer Mandiri', note: 'Aktif'),
-            _PaymentRow(name: 'Transfer BRI', note: 'Nonaktif'),
-            _PaymentRow(name: 'Transfer BNI', note: 'Nonaktif'),
+            Text(
+              'Customer memilih metode saat membayar pesanan. Pembayaran '
+              'dikonfirmasi manual oleh mitra (belum terhubung payment '
+              'gateway).',
+              style: TextStyle(fontSize: 12, height: 1.4),
+            ),
+            SizedBox(height: 12),
+            _PaymentRow(name: 'QRIS', note: 'Demo'),
+            _PaymentRow(name: 'Transfer BCA', note: 'Demo'),
+            _PaymentRow(name: 'Transfer Mandiri', note: 'Demo'),
+            _PaymentRow(name: 'Transfer BRI', note: 'Demo'),
+            _PaymentRow(name: 'Transfer BNI', note: 'Demo'),
+            _PaymentRow(name: 'Tunai (walk-in)', note: 'Demo'),
           ],
         ),
       ),
     );
   }
 
-  void openChangePassword() {
-    Get.dialog(
+  Future<void> openChangePassword() async {
+    final currentController = TextEditingController();
+    final newController = TextEditingController();
+
+    final save = await Get.dialog<bool>(
       AlertDialog(
         title: const Text('Ubah password'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: const [
+          children: [
             TextField(
+              controller: currentController,
               obscureText: true,
-              decoration: InputDecoration(labelText: 'Password lama'),
+              decoration: const InputDecoration(labelText: 'Password saat ini'),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             TextField(
+              controller: newController,
               obscureText: true,
-              decoration: InputDecoration(labelText: 'Password baru'),
-            ),
-            SizedBox(height: 10),
-            TextField(
-              obscureText: true,
-              decoration: InputDecoration(labelText: 'Ulangi password baru'),
+              decoration: const InputDecoration(labelText: 'Password baru'),
             ),
           ],
         ),
         actions: [
           TextButton(onPressed: Get.back, child: const Text('Batal')),
-          FilledButton(onPressed: Get.back, child: const Text('Simpan')),
+          FilledButton(
+            onPressed: () => Get.back(result: true),
+            child: const Text('Simpan'),
+          ),
         ],
       ),
     );
+
+    final current = currentController.text;
+    final password = newController.text;
+    currentController.dispose();
+    newController.dispose();
+
+    if (save != true) return;
+    if (password.length < 6) {
+      Get.snackbar(
+        'Password lemah',
+        'Minimal 6 karakter.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
+      return;
+    }
+
+    try {
+      // Verifikasi password lama dulu supaya sesi tidak dibajak.
+      final email = auth.profile.value?.email;
+      if (email == null) throw StateError('sesi tidak valid');
+      await auth.signIn(email: email, password: current);
+      await auth.changePassword(password);
+      Get.snackbar(
+        'Password diperbarui',
+        'Gunakan password baru saat login berikutnya.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
+    } catch (_) {
+      Get.snackbar(
+        'Gagal mengubah password',
+        'Password saat ini salah atau password baru ditolak.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
+    }
   }
 
   void openHelp() {
@@ -123,7 +198,7 @@ class MitraSettingsController extends GetxController {
         content: const Text(
           'SalonHub Mitra v1.0.0\n\n'
           'Aplikasi pengelolaan barbershop untuk mitra SalonHub. '
-          'Tampilan ini masih berupa prototipe tanpa backend.',
+          'Semua data tersimpan di Supabase.',
         ),
         actions: [TextButton(onPressed: Get.back, child: const Text('Tutup'))],
       ),
@@ -135,8 +210,8 @@ class MitraSettingsController extends GetxController {
       AlertDialog(
         title: const Text('Kebijakan privasi'),
         content: const Text(
-          'Data pada prototipe ini hanya disimpan di memori aplikasi dan '
-          'tidak dikirim ke server mana pun.',
+          'Data akun, toko, pesanan, dan foto disimpan di Supabase dan hanya '
+          'dapat diakses oleh pemilik akun sesuai aturan RLS.',
         ),
         actions: [
           TextButton(onPressed: Get.back, child: const Text('Mengerti')),
@@ -164,6 +239,7 @@ class MitraSettingsController extends GetxController {
     );
 
     if (confirmed == true) {
+      await auth.signOut();
       Get.offAllNamed(Routes.MITRA_LOGIN);
     }
   }
@@ -206,29 +282,6 @@ class MitraSettingsController extends GetxController {
   }
 }
 
-class _HourRow extends StatelessWidget {
-  const _HourRow({required this.day, required this.hours});
-
-  final String day;
-  final String hours;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 7),
-      child: Row(
-        children: [
-          Expanded(child: Text(day, style: const TextStyle(fontSize: 13))),
-          Text(
-            hours,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _PaymentRow extends StatelessWidget {
   const _PaymentRow({required this.name, required this.note});
 
@@ -237,7 +290,7 @@ class _PaymentRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isActive = note == 'Aktif';
+    final isActive = note != 'Nonaktif';
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 7),
       child: Row(

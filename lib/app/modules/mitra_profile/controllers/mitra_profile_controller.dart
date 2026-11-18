@@ -1,10 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import 'package:salonhub_v2/app/data/mitra_data_service.dart';
 import 'package:salonhub_v2/app/routes/app_pages.dart';
+import 'package:salonhub_v2/app/services/auth_service.dart';
 
 class MitraProfileController extends GetxController {
   final data = Get.find<MitraDataService>();
+  final auth = Get.find<AuthService>();
+
+  String get ownerName => auth.profile.value?.fullName ?? 'Mitra';
+
+  @override
+  void onInit() {
+    data.load();
+    super.onInit();
+  }
 
   void openShopProfile() {
     Get.toNamed(Routes.MITRA_SHOP_PROFILE);
@@ -53,6 +64,7 @@ class MitraProfileController extends GetxController {
     );
 
     if (confirmed == true) {
+      await auth.signOut();
       Get.offAllNamed(Routes.MITRA_LOGIN);
     }
   }

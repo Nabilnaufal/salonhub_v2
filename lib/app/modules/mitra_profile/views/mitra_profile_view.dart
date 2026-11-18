@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
 import 'package:salonhub_v2/app/modules/mitra_profile/controllers/mitra_profile_controller.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 
 class MitraProfileView extends GetView<MitraProfileController> {
   const MitraProfileView({super.key});
@@ -206,7 +207,7 @@ class MitraProfileView extends GetView<MitraProfileController> {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.asset(shop.image, fit: BoxFit.cover),
+                  child: AppPhoto(shop.image, fit: BoxFit.cover),
                 ),
               ),
               const SizedBox(width: 12),

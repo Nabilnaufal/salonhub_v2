@@ -1,18 +1,36 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:salonhub_v2/app/data/mitra_data_service.dart';
 import 'package:salonhub_v2/app/models/mitra.dart';
+import 'package:salonhub_v2/app/services/auth_service.dart';
 
 class MitraTeamFormController extends GetxController {
   final data = Get.find<MitraDataService>();
+  final auth = Get.find<AuthService>();
 
   final nameController = TextEditingController();
   final roleController = TextEditingController();
   final shiftController = TextEditingController(text: '09.00 - 17.00');
+  final image = ''.obs;
+  final isBusy = false.obs;
 
   MitraTeamMember? editingMember;
 
   bool get isEditing => editingMember != null;
+
+  Future<void> pickImage() async {
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+    );
+    if (picked == null) return;
+
+    final Uint8List bytes = await picked.readAsBytes();
+    image.value = await auth.uploadPhoto(bytes, folder: 'barbers');
+  }
 
   @override
   void onInit() {
@@ -22,11 +40,12 @@ class MitraTeamFormController extends GetxController {
       nameController.text = arguments.name;
       roleController.text = arguments.role;
       shiftController.text = arguments.shift;
+      image.value = arguments.image;
     }
     super.onInit();
   }
 
-  void save() {
+  Future<void> save() async {
     final name = nameController.text.trim();
     final role = roleController.text.trim();
     final shift = shiftController.text.trim();
@@ -43,40 +62,50 @@ class MitraTeamFormController extends GetxController {
       return;
     }
 
-    if (isEditing) {
-      data.updateTeamMember(
-        editingMember!.copyWith(name: name, role: role, shift: shift),
-      );
+    isBusy.value = true;
+    try {
+      final member =
+          (editingMember ??
+                  const MitraTeamMember(
+                    id: '',
+                    name: '',
+                    role: '',
+                    rating: 5,
+                    image: '',
+                    isActive: true,
+                    todayBookings: 0,
+                    shift: '',
+                  ))
+              .copyWith(
+                name: name,
+                role: role,
+                shift: shift.isEmpty ? '09.00 - 17.00' : shift,
+                image: image.value,
+              );
+
+      if (isEditing) {
+        await data.updateTeamMember(member);
+      } else {
+        await data.addTeamMember(member);
+      }
+
       Get.back();
       Get.snackbar(
-        'Barber diperbarui',
-        '$name berhasil disimpan.',
+        isEditing ? 'Barber diperbarui' : 'Barber ditambahkan',
+        '$name sudah tersimpan di Supabase.',
         snackPosition: SnackPosition.BOTTOM,
         margin: const EdgeInsets.all(16),
       );
-      return;
+    } catch (_) {
+      Get.snackbar(
+        'Gagal menyimpan',
+        'Data barber belum tersimpan. Coba lagi.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
+    } finally {
+      isBusy.value = false;
     }
-
-    data.addTeamMember(
-      MitraTeamMember(
-        id: 'tm-${DateTime.now().millisecondsSinceEpoch}',
-        name: name,
-        role: role,
-        rating: 5.0,
-        image: 'lib/assets/barbershop_interior_1.jpg',
-        isActive: true,
-        todayBookings: 0,
-        shift: shift.isEmpty ? '09.00 - 17.00' : shift,
-      ),
-    );
-
-    Get.back();
-    Get.snackbar(
-      'Barber ditambahkan',
-      '$name sudah masuk ke tim barbershop.',
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
-    );
   }
 
   void back() {

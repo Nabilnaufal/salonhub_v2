@@ -7,30 +7,49 @@ import 'package:salonhub_v2/app/routes/app_pages.dart';
 class MitraDashboardController extends GetxController {
   final data = Get.find<MitraDataService>();
 
+  @override
+  void onInit() {
+    data.load();
+    super.onInit();
+  }
+
   MitraShop get shop => data.shop.value;
   bool get isShopOpen => data.isShopOpen.value;
   List<MitraOrder> get recentOrders => data.orders.take(3).toList();
   List<MitraReview> get latestReviews => data.reviews.take(1).toList();
 
-  List<int> get weeklyRevenue => const [
-    850000,
-    1200000,
-    700000,
-    1450000,
-    980000,
-    1650000,
-    1250000,
-  ];
+  List<int> get weeklyRevenue {
+    final now = DateTime.now();
+    return List.generate(7, (index) {
+      final day = DateTime(
+        now.year,
+        now.month,
+        now.day,
+      ).subtract(Duration(days: 6 - index));
+      return data.orders
+          .where((order) {
+            final at = order.scheduledAt;
+            return at != null &&
+                at.year == day.year &&
+                at.month == day.month &&
+                at.day == day.day &&
+                order.isPaid &&
+                order.status != MitraOrderStatus.dibatalkan;
+          })
+          .fold(0, (total, order) => total + order.totalPrice);
+    });
+  }
 
-  List<String> get weeklyLabels => const [
-    'Sen',
-    'Sel',
-    'Rab',
-    'Kam',
-    'Jum',
-    'Sab',
-    'Min',
-  ];
+  List<String> get weeklyLabels {
+    const names = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+    final now = DateTime.now();
+    return List.generate(
+      7,
+      (index) => names[dayLabelIndex(now.subtract(Duration(days: 6 - index)))],
+    );
+  }
+
+  int dayLabelIndex(DateTime date) => date.weekday - 1;
 
   void toggleShop() {
     data.toggleShop();
@@ -69,6 +88,10 @@ class MitraDashboardController extends GetxController {
   }
 
   void openNotifications() {
+    if (data.newOrdersCount > 0) {
+      Get.toNamed(Routes.MITRA_ORDERS);
+      return;
+    }
     Get.snackbar(
       'Notifikasi',
       'Tidak ada notifikasi baru saat ini.',

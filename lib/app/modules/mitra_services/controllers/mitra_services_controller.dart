@@ -10,6 +10,12 @@ class MitraServicesController extends GetxController {
   /// 0 = semua, 1 = aktif, 2 = nonaktif.
   final selectedFilter = 0.obs;
 
+  @override
+  void onInit() {
+    data.load();
+    super.onInit();
+  }
+
   List<MitraService> get filteredServices {
     switch (selectedFilter.value) {
       case 1:

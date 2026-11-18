@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
 import 'package:salonhub_v2/app/modules/mitra_shop_profile/controllers/mitra_shop_profile_controller.dart';
 import 'package:salonhub_v2/app/widgets/mitra_page_header.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 
 class MitraShopProfileView extends GetView<MitraShopProfileController> {
   const MitraShopProfileView({super.key});
@@ -92,108 +93,111 @@ class MitraShopProfileView extends GetView<MitraShopProfileController> {
           ),
         ),
         const Spacer(),
-        if (trailing != null) trailing,
+        ?trailing,
       ],
     );
   }
 
   Widget _buildCover() {
-    return Stack(
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(18),
-          child: Image.asset(
-            controller.shop.image,
-            height: 168,
-            width: double.infinity,
-            fit: BoxFit.cover,
+    return GestureDetector(
+      onTap: controller.pickPhoto,
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: AppPhoto(
+              controller.shop.image,
+              height: 168,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            ),
           ),
-        ),
-        Positioned.fill(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
-              gradient: LinearGradient(
-                colors: [
-                  Colors.transparent,
-                  AppColors.coolGray900.withValues(alpha: .55),
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.transparent,
+                    AppColors.coolGray900.withValues(alpha: .55),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
               ),
             ),
           ),
-        ),
-        Positioned(
-          top: 12,
-          right: 12,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-            decoration: BoxDecoration(
-              color: controller.isShopOpen
-                  ? AppColors.teal600
-                  : AppColors.red600,
-              borderRadius: BorderRadius.circular(99),
+          Positioned(
+            top: 12,
+            right: 12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+              decoration: BoxDecoration(
+                color: controller.isShopOpen
+                    ? AppColors.teal600
+                    : AppColors.red600,
+                borderRadius: BorderRadius.circular(99),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: const BoxDecoration(
+                      color: AppColors.white,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    controller.isShopOpen ? 'Buka' : 'Tutup',
+                    style: AppTextStyles.caption2.copyWith(
+                      color: AppColors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
             ),
+          ),
+          Positioned(
+            left: 14,
+            bottom: 12,
+            right: 14,
             child: Row(
               children: [
                 Container(
-                  width: 6,
-                  height: 6,
-                  decoration: const BoxDecoration(
+                  width: 44,
+                  height: 44,
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
                     color: AppColors.white,
-                    shape: BoxShape.circle,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: SvgPicture.asset(
+                    'lib/assets/icons/Shop.svg',
+                    colorFilter: const ColorFilter.mode(
+                      AppColors.primary900,
+                      BlendMode.srcIn,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 5),
-                Text(
-                  controller.isShopOpen ? 'Buka' : 'Tutup',
-                  style: AppTextStyles.caption2.copyWith(
-                    color: AppColors.white,
-                    fontWeight: FontWeight.w700,
+                const SizedBox(width: 9),
+                Expanded(
+                  child: Text(
+                    controller.shop.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.headline4.copyWith(
+                      color: AppColors.white,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-        ),
-        Positioned(
-          left: 14,
-          bottom: 12,
-          right: 14,
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: SvgPicture.asset(
-                  'lib/assets/icons/Shop.svg',
-                  colorFilter: const ColorFilter.mode(
-                    AppColors.primary900,
-                    BlendMode.srcIn,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 9),
-              Expanded(
-                child: Text(
-                  controller.shop.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.headline4.copyWith(
-                    color: AppColors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -266,7 +270,9 @@ class MitraShopProfileView extends GetView<MitraShopProfileController> {
               const SizedBox(width: 3),
               Expanded(
                 child: Text(
-                  controller.shop.distanceLabel,
+                  controller.shop.address.isEmpty
+                      ? 'Barbershop'
+                      : controller.shop.address,
                   style: AppTextStyles.caption2.copyWith(
                     color: AppColors.coolGray500,
                   ),
@@ -542,10 +548,10 @@ class MitraShopProfileView extends GetView<MitraShopProfileController> {
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: controller.shop.gallery.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              separatorBuilder: (_, _) => const SizedBox(width: 8),
               itemBuilder: (context, index) => ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: Image.asset(
+                child: AppPhoto(
                   controller.shop.gallery[index],
                   width: 110,
                   height: 84,
