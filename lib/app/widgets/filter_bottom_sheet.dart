@@ -2,15 +2,52 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
 
-class FilterBottomSheet extends StatefulWidget {
-  const FilterBottomSheet({super.key});
+/// Nilai filter yang dipilih dari bottom sheet.
+class FilterOptions {
+  const FilterOptions({
+    this.category,
+    this.minimumRating = 0,
+    this.nearestKm = 0,
+    this.farthestKm = 50,
+  });
 
-  static Future<void> show(BuildContext context) {
-    return showModalBottomSheet<void>(
+  final String? category;
+  final double minimumRating;
+  final double nearestKm;
+  final double farthestKm;
+
+  bool get isEmpty =>
+      category == null && minimumRating == 0 && farthestKm >= 50;
+}
+
+class FilterBottomSheet extends StatefulWidget {
+  const FilterBottomSheet({
+    super.key,
+    this.initialCategory,
+    this.initialRating = 0,
+    this.initialNearest = 0.1,
+    this.initialFarthest = 10,
+  });
+
+  final String? initialCategory;
+  final double initialRating;
+  final double initialNearest;
+  final double initialFarthest;
+
+  static Future<FilterOptions?> show(
+    BuildContext context, {
+    FilterOptions? current,
+  }) {
+    return showModalBottomSheet<FilterOptions>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => const FilterBottomSheet(),
+      builder: (_) => FilterBottomSheet(
+        initialCategory: current?.category,
+        initialRating: current?.minimumRating ?? 0,
+        initialNearest: current?.nearestKm ?? 0.1,
+        initialFarthest: current?.farthestKm ?? 10,
+      ),
     );
   }
 
@@ -19,11 +56,15 @@ class FilterBottomSheet extends StatefulWidget {
 }
 
 class _FilterBottomSheetState extends State<FilterBottomSheet> {
-  final nearestController = TextEditingController(text: '0.1');
-  final farthestController = TextEditingController(text: '10');
+  late final nearestController = TextEditingController(
+    text: widget.initialNearest.toString(),
+  );
+  late final farthestController = TextEditingController(
+    text: widget.initialFarthest.toString(),
+  );
 
-  String selectedCategory = 'Basic haircut';
-  double minimumRating = 4;
+  late String? selectedCategory = widget.initialCategory;
+  late double minimumRating = widget.initialRating;
 
   final categories = const [
     'Basic haircut',
@@ -143,7 +184,9 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
             final isSelected = selectedCategory == category;
 
             return InkWell(
-              onTap: () => setState(() => selectedCategory = category),
+              onTap: () => setState(
+                () => selectedCategory = isSelected ? null : category,
+              ),
               borderRadius: BorderRadius.circular(10),
               child: Container(
                 padding: const EdgeInsets.symmetric(
@@ -202,36 +245,36 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                 }),
               ),
             ),
-            const SizedBox(width: 10),
-            Text(
-              '(${minimumRating.toStringAsFixed(1)})',
-              style: AppTextStyles.body3.copyWith(color: AppColors.primary900),
-            ),
           ],
         ),
-        const SizedBox(height: 8),
-        SliderTheme(
-          data: SliderTheme.of(context).copyWith(
-            activeTrackColor: AppColors.primary900,
-            inactiveTrackColor: AppColors.blueGray200,
-            thumbColor: AppColors.primary900,
-            overlayColor: AppColors.primary100,
-            trackHeight: 8,
-            tickMarkShape: SliderTickMarkShape.noTickMark,
-          ),
-          child: SizedBox(
-            width: starsWidth,
-            child: Slider(
-              padding: EdgeInsets.zero,
-              value: minimumRating,
-              min: 0,
-              max: 5,
-              divisions: 10,
-              onChanged: (value) {
-                setState(() => minimumRating = value);
-              },
+        Row(
+          children: [
+            Expanded(
+              child: SliderTheme(
+                data: SliderThemeData(
+                  activeTrackColor: AppColors.primary900,
+                  inactiveTrackColor: AppColors.blueGray200,
+                  thumbColor: AppColors.primary900,
+                  overlayColor: AppColors.primary100,
+                  trackHeight: 8,
+                  tickMarkShape: SliderTickMarkShape.noTickMark,
+                ),
+                child: SizedBox(
+                  width: starsWidth,
+                  child: Slider(
+                    padding: EdgeInsets.zero,
+                    value: minimumRating,
+                    min: 0,
+                    max: 5,
+                    divisions: 10,
+                    onChanged: (value) {
+                      setState(() => minimumRating = value);
+                    },
+                  ),
+                ),
+              ),
             ),
-          ),
+          ],
         ),
       ],
     );
@@ -252,9 +295,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
               child: SizedBox(
                 width: 24,
                 height: 46,
-                child: Center(
-                  child: Text('–', style: TextStyle(fontSize: 20)),
-                ),
+                child: Center(child: Text('–', style: TextStyle(fontSize: 20))),
               ),
             ),
             Expanded(child: _distanceField('Terjauh', farthestController)),
@@ -320,7 +361,15 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
       width: double.infinity,
       height: 48,
       child: ElevatedButton(
-        onPressed: () => Navigator.pop(context),
+        onPressed: () => Navigator.pop(
+          context,
+          FilterOptions(
+            category: selectedCategory,
+            minimumRating: minimumRating,
+            nearestKm: double.tryParse(nearestController.text) ?? 0,
+            farthestKm: double.tryParse(farthestController.text) ?? 50,
+          ),
+        ),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary900,
           foregroundColor: AppColors.white,

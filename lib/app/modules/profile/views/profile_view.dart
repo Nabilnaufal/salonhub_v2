@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
 
 import '../controllers/profile_controller.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 
 class ProfileView extends GetView<ProfileController> {
   const ProfileView({super.key});
@@ -65,21 +66,30 @@ class ProfileView extends GetView<ProfileController> {
                 children: [
                   _buildProfileAvatar(),
                   const SizedBox(width: 14),
-                  Text(
-                    'Naufal Nabil',
-                    style: AppTextStyles.headline2.copyWith(
-                      color: AppColors.white,
+                  Obx(
+                    () => Text(
+                      controller.displayName,
+                      style: AppTextStyles.headline2.copyWith(
+                        color: AppColors.white,
+                      ),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 18),
-              _buildContactRow(
-                icon: Icons.email_rounded,
-                text: 'naufalnabil@gmail.com',
+              Obx(
+                () => _buildContactRow(
+                  icon: Icons.email_rounded,
+                  text: controller.email,
+                ),
               ),
               const SizedBox(height: 12),
-              _buildContactRow(icon: Icons.location_on, text: 'Medan'),
+              Obx(
+                () => _buildContactRow(
+                  icon: Icons.phone_outlined,
+                  text: controller.auth.profile.value?.phone ?? '',
+                ),
+              ),
             ],
           ),
         ),
@@ -97,7 +107,7 @@ class ProfileView extends GetView<ProfileController> {
         shape: BoxShape.circle,
       ),
       child: ClipOval(
-        child: Image.asset('${_assetPath}login_picture.png', fit: BoxFit.cover),
+        child: Obx(() => AppPhoto(controller.avatarUrl, fit: BoxFit.cover)),
       ),
     );
   }

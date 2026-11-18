@@ -36,6 +36,7 @@ class InvoiceView extends GetView<InvoiceController> {
                         bookingDate: controller.bookingDate,
                         bookingCode: controller.bookingCode,
                         serviceName: controller.serviceName,
+                        shopName: controller.shopName,
                       ),
                       const SizedBox(height: 18),
                       const Divider(color: AppColors.blueGray200, height: 1),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 
 class AppointmentStylistCard extends StatelessWidget {
   const AppointmentStylistCard({
@@ -37,14 +38,14 @@ class AppointmentStylistCard extends StatelessWidget {
                             AppColors.primary900.withValues(alpha: .45),
                             BlendMode.srcATop,
                           ),
-                          child: Image.asset(
+                          child: AppPhoto(
                             image,
                             width: 52,
                             height: 52,
                             fit: BoxFit.cover,
                           ),
                         )
-                      : Image.asset(
+                      : AppPhoto(
                           image,
                           width: 52,
                           height: 52,

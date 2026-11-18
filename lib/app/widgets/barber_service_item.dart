@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 
 class BarberServiceItem extends StatelessWidget {
   const BarberServiceItem({
@@ -25,7 +26,7 @@ class BarberServiceItem extends StatelessWidget {
             child: SizedBox(
               width: 38,
               height: 38,
-              child: Image.asset(image, fit: BoxFit.cover),
+              child: AppPhoto(image, fit: BoxFit.cover),
             ),
           ),
           const SizedBox(width: 9),

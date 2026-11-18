@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
-import 'package:salonhub_v2/app/routes/app_pages.dart';
 import 'package:salonhub_v2/app/widgets/explore_barber_item.dart';
 import 'package:salonhub_v2/app/widgets/featured_barber_carousel.dart';
-import 'package:salonhub_v2/app/widgets/filter_bottom_sheet.dart';
 
 import '../controllers/explore_barbers_controller.dart';
 
@@ -34,7 +32,7 @@ class ExploreBarbersView extends GetView<ExploreBarbersController> {
                     if (barbers.isNotEmpty) ...[
                       FeaturedBarberCarousel(
                         barbers: barbers.take(4).toList(),
-                        onBarberTap: () => Get.toNamed(Routes.BARBER_DETAIL),
+                        onBarberTap: controller.openBarber,
                       ),
                       const SizedBox(height: 16),
                     ],
@@ -48,13 +46,19 @@ class ExploreBarbersView extends GetView<ExploreBarbersController> {
                           .map(
                             (barber) => ExploreBarberItem(
                               barber,
-                              onTap: () => Get.toNamed(Routes.BARBER_DETAIL),
+                              onTap: () => controller.openBarber(barber),
                             ),
                           ),
                     if (barbers.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.only(top: 32),
-                        child: Center(child: Text('Barber tidak ditemukan.')),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 32),
+                        child: Center(
+                          child: Text(
+                            controller.onlyFavorites.value
+                                ? 'Belum ada toko favorit.'
+                                : 'Barber tidak ditemukan.',
+                          ),
+                        ),
                       ),
                   ],
                 );
@@ -81,6 +85,21 @@ class ExploreBarbersView extends GetView<ExploreBarbersController> {
           style: AppTextStyles.subHeadline3.copyWith(
             color: AppColors.coolGray900,
             fontWeight: FontWeight.w700,
+          ),
+        ),
+        const Spacer(),
+        Obx(
+          () => IconButton(
+            onPressed: controller.toggleOnlyFavorites,
+            icon: Icon(
+              controller.onlyFavorites.value
+                  ? Icons.favorite
+                  : Icons.favorite_border,
+              color: controller.onlyFavorites.value
+                  ? AppColors.red600
+                  : AppColors.coolGray400,
+            ),
+            tooltip: 'Hanya favorit',
           ),
         ),
       ],
@@ -131,7 +150,7 @@ class ExploreBarbersView extends GetView<ExploreBarbersController> {
         ),
         const SizedBox(width: 10),
         InkWell(
-          onTap: () => FilterBottomSheet.show(context),
+          onTap: () => controller.openFilter(context),
           borderRadius: BorderRadius.circular(8),
           child: Container(
             width: 42,

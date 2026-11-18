@@ -1,15 +1,23 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import 'package:salonhub_v2/app/routes/app_pages.dart';
+import 'package:salonhub_v2/app/services/catalog_service.dart';
 
 class PaymentController extends GetxController {
+  final catalog = Get.find<CatalogService>();
+
   String methodName = 'QRIS';
   String methodImage = 'lib/assets/icons/QRIS Logo - Black - zonalogo.com.svg';
-  int totalPrice = 45000;
-  String appointmentDateLabel = 'Kamis, 15 Januari 2026 - 08.00 WIB';
-  String serviceName = 'Potong rambut dasar';
-  int servicePrice = 20000;
+  String bookingId = '';
+  int totalPrice = 0;
+  String appointmentDateLabel = '';
+  String serviceName = '';
+  int servicePrice = 0;
   int serviceFeePrice = 25000;
-  String bookingCode = 'SBH-260115-0800';
+  String bookingCode = '';
+  String shopName = '';
+  bool isBusy = false;
 
   @override
   void onInit() {
@@ -48,65 +56,72 @@ class PaymentController extends GetxController {
     return 'Rp$formatted';
   }
 
-  void markAsPaid() {
-    Get.toNamed(
-      Routes.INVOICE,
-      arguments: {
-        'appointmentDateLabel': appointmentDateLabel,
-        'bookingCode': bookingCode,
-        'paymentMethodName': methodName,
-        'serviceName': serviceName,
-        'servicePrice': servicePrice,
-        'serviceFeePrice': serviceFeePrice,
-        'totalPrice': totalPrice,
-      },
-    );
+  Future<void> markAsPaid() async {
+    if (isBusy) return;
+    isBusy = true;
+    update();
+
+    try {
+      if (bookingId.isNotEmpty) {
+        await catalog.markBookingPaid(bookingId, method: methodName);
+      }
+      Get.toNamed(
+        Routes.INVOICE,
+        arguments: {
+          'appointmentDateLabel': appointmentDateLabel,
+          'bookingCode': bookingCode,
+          'paymentMethodName': methodName,
+          'serviceName': serviceName,
+          'servicePrice': servicePrice,
+          'serviceFeePrice': serviceFeePrice,
+          'totalPrice': totalPrice,
+        },
+      );
+    } catch (_) {
+      Get.snackbar(
+        'Pembayaran gagal',
+        'Status pembayaran belum tersimpan. Coba lagi.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
+    } finally {
+      isBusy = false;
+      update();
+    }
   }
 
   void _readPaymentArguments() {
     final arguments = Get.arguments;
-    if (arguments is! Map) {
-      return;
-    }
+    if (arguments is! Map) return;
 
     final name = arguments['methodName'];
-    if (name is String) {
-      methodName = name;
-    }
+    if (name is String) methodName = name;
 
     final image = arguments['methodImage'];
-    if (image is String) {
-      methodImage = image;
-    }
+    if (image is String) methodImage = image;
+
+    final id = arguments['bookingId'];
+    if (id is String) bookingId = id;
 
     final code = arguments['bookingCode'];
-    if (code is String) {
-      bookingCode = code;
-    }
+    if (code is String) bookingCode = code;
+
+    final shop = arguments['shopName'];
+    if (shop is String) shopName = shop;
 
     final total = arguments['totalPrice'];
-    if (total is int) {
-      totalPrice = total;
-    }
+    if (total is int) totalPrice = total;
 
     final dateLabel = arguments['appointmentDateLabel'];
-    if (dateLabel is String) {
-      appointmentDateLabel = dateLabel;
-    }
+    if (dateLabel is String) appointmentDateLabel = dateLabel;
 
     final selectedServiceName = arguments['serviceName'];
-    if (selectedServiceName is String) {
-      serviceName = selectedServiceName;
-    }
+    if (selectedServiceName is String) serviceName = selectedServiceName;
 
     final selectedServicePrice = arguments['servicePrice'];
-    if (selectedServicePrice is int) {
-      servicePrice = selectedServicePrice;
-    }
+    if (selectedServicePrice is int) servicePrice = selectedServicePrice;
 
     final feePrice = arguments['serviceFeePrice'];
-    if (feePrice is int) {
-      serviceFeePrice = feePrice;
-    }
+    if (feePrice is int) serviceFeePrice = feePrice;
   }
 }

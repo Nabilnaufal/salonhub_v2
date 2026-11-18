@@ -4,7 +4,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
-import 'package:salonhub_v2/app/routes/app_pages.dart';
 import 'package:salonhub_v2/app/widgets/current_location_marker.dart';
 import 'package:salonhub_v2/app/widgets/find_back_icon.dart';
 import 'package:salonhub_v2/app/widgets/find_barber_marker.dart';
@@ -115,7 +114,7 @@ class FindBarberView extends GetView<FindBarberController> {
                       child: GestureDetector(
                         onTap: () {
                           controller.selectMarker(index);
-                          Get.toNamed(Routes.BARBER_DETAIL);
+                          controller.openBarber(controller.mapBarbers[index]);
                         },
                         child: FindBarberMarker(
                           active: controller.selectedMarker.value == index,
@@ -376,7 +375,8 @@ class FindBarberView extends GetView<FindBarberController> {
               itemBuilder: (context, index) {
                 return NearbyBarberCard(
                   barber: controller.nearbyBarbers[index],
-                  onTap: () => Get.toNamed(Routes.BARBER_DETAIL),
+                  onTap: () =>
+                      controller.openBarber(controller.nearbyBarbers[index]),
                 );
               },
             ),

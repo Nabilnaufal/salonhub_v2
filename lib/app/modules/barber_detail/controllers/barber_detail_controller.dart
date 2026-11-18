@@ -1,6 +1,11 @@
-import 'package:flutter/material.dart' show Color;
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:salonhub_v2/app/constant/theme.dart';
+
+import 'package:salonhub_v2/app/models/barber.dart';
+import 'package:salonhub_v2/app/models/mitra.dart' show formatRupiah;
+import 'package:salonhub_v2/app/routes/app_pages.dart';
+import 'package:salonhub_v2/app/services/external_actions.dart';
+import 'package:salonhub_v2/app/services/catalog_service.dart';
 
 class ServiceBooking {
   const ServiceBooking({
@@ -26,140 +31,259 @@ typedef BarberReview = ({
 });
 
 class BarberDetailController extends GetxController {
+  final catalog = Get.find<CatalogService>();
+
   final selectedTab = 0.obs;
+  final ready = false.obs;
 
-  final shopName = 'Masterpiece Barbershop - Haircut styling';
-  final shopImage = 'lib/assets/barbershop_haircut_2.jpg';
-  final location = 'Joga Expo Centre (2 km)';
-  final rating = '5.0  (24)';
-  final description =
-      'Di Masterpiece Barbershop, tim ahli cukur kami yang berpengalaman siap memberikan hasil terbaik dan mengubah penampilan rambutmu.';
+  String shopId = '';
+  Barber? barber;
 
-  final openingHours = const [
-    (day: 'Senin - Jumat', hours: '09.00 - 20.00'),
-    (day: 'Sabtu - Minggu', hours: '09.00 - 21.00'),
-  ];
+  String shopName = '';
+  String shopImage = '';
+  String location = '';
+  String rating = '0.0';
+  String description = '';
 
-  final services = const [
-    (
-      name: 'Basic haircut',
-      description: 'Basic haircut & vitamint',
-      price: 'Rp20.000',
-      image: 'lib/assets/barbershop_haircut_3.jpg',
-    ),
-    (
-      name: 'Kids haircut',
-      description: 'Specialist kids haircut',
-      price: 'Rp15.000',
-      image: 'lib/assets/barbershop_exterior_1.jpg',
-    ),
-    (
-      name: 'Hair coloring',
-      description: 'Hair color treatment',
-      price: 'Rp30.000',
-      image: 'lib/assets/barbershop_haircut_1.jpg',
-    ),
-    (
-      name: 'Hair treatment',
-      description: 'Special full treatment',
-      price: 'Rp10.000',
-      image: 'lib/assets/barbershop_interior_2.jpg',
-    ),
-    (
-      name: 'Special massage',
-      description: 'Additional massage',
-      price: 'Rp10.000',
-      image: 'lib/assets/barbershop_interior_1.jpg',
-    ),
-  ];
+  final openingHours = <({String day, String hours})>[].obs;
+  final services =
+      <({String name, String description, String price, String image})>[].obs;
+  final teamMembers =
+      <({String name, String role, String rating, String image})>[].obs;
+  final reviews = <BarberReview>[].obs;
+  final scheduleBookings = <ServiceBooking>[].obs;
+  final isFavorite = false.obs;
+  final scheduleDay = DateTime.now().obs;
 
-  final scheduleDate = '28 Agu 2023';
-  final scheduleTimes = const [
-    '08.00',
-    '08.30',
-    '09.00',
-    '09.30',
-    '10.00',
-    '10.30',
-  ];
+  String get scheduleDate {
+    final day = scheduleDay.value;
+    final now = DateTime.now();
+    if (day.year == now.year && day.month == now.month && day.day == now.day) {
+      return 'Jadwal hari ini';
+    }
+    return 'Jadwal ${day.day}/${day.month}/${day.year}';
+  }
 
-  final scheduleBookings = const [
-    ServiceBooking(
-      time: '08.30',
-      name: 'Alam Carl',
-      service: 'Basic haircut',
-      image: 'lib/assets/barbershop_haircut_3.jpg',
-      color: AppColors.secondary900,
-    ),
-    ServiceBooking(
-      time: '09.00',
-      name: 'Sergio Wirl',
-      service: 'Hair coloring',
-      image: 'lib/assets/barbershop_haircut_1.jpg',
-      color: AppColors.primary600,
-    ),
-    ServiceBooking(
-      time: '10.00',
-      name: 'Sergio Wirl',
-      service: 'Basic haircut',
-      image: 'lib/assets/barbershop_interior_1.jpg',
-      color: AppColors.primary600,
-    ),
-  ];
+  List<String> get scheduleTimes {
+    final now = DateTime.now();
+    final day = scheduleDay.value;
+    final isToday =
+        day.year == now.year && day.month == now.month && day.day == now.day;
+    return List.generate(13, (index) {
+      final hour = 8 + index;
+      return '${hour.toString().padLeft(2, '0')}.00';
+    }).where((time) {
+      if (!isToday) return true;
+      return int.parse(time.split('.').first) >= now.hour;
+    }).toList();
+  }
 
-  final reviews = const <BarberReview>[
-    (
-      name: 'Alan Cartwright',
-      rating: 4.0,
-      comment: 'Good service, recommendation for barber shop seekers',
-      image: 'lib/assets/barbershop_haircut_3.jpg',
-    ),
-    (
-      name: 'Robert Gleichner',
-      rating: 5.0,
-      comment: 'Place is not too far and the shaving results are good',
-      image: 'lib/assets/barbershop_haircut_1.jpg',
-    ),
-    (
-      name: 'Sergio Wilderman',
-      rating: 4.0,
-      comment:
-          'Price is quite affordable and the service is good, I am very satisfied',
-      image: 'lib/assets/barbershop_interior_2.jpg',
-    ),
-    (
-      name: 'Miss Erik VonRueden',
-      rating: 5.0,
-      comment:
-          'Style of barbering here really follows the times, like the service',
-      image: 'lib/assets/barbershop_interior_1.jpg',
-    ),
-  ];
+  @override
+  void onInit() {
+    final arguments = Get.arguments;
+    if (arguments is Barber) {
+      barber = arguments;
+      shopId = arguments.id;
+      _applyBarber(arguments);
+    } else if (arguments is Map && arguments['shopId'] is String) {
+      shopId = arguments['shopId'] as String;
+    }
 
-  final teamMembers = const [
-    (
-      name: 'Luther Hammes',
-      role: 'Specialist Haircut',
-      rating: '5.0',
-      image: 'lib/assets/barbershop_haircut_3.jpg',
-    ),
-    (
-      name: 'Emanuel Bernier',
-      role: 'Specialist Coloring',
-      rating: '4.5',
-      image: 'lib/assets/barbershop_haircut_1.jpg',
-    ),
-    (
-      name: 'Karl Vandervort',
-      role: 'Specialist Treatment',
-      rating: '4.5',
-      image: 'lib/assets/barbershop_interior_1.jpg',
-    ),
-  ];
+    _load();
+    super.onInit();
+  }
+
+  void _applyBarber(Barber value) {
+    shopName = value.name;
+    shopImage = value.image;
+    location = value.description;
+    rating = '${value.rating}  (${value.distance})';
+  }
+
+  Future<void> _load() async {
+    try {
+      if (shopId.isEmpty) {
+        final shops = await catalog.loadShops();
+        if (shops.isEmpty) return;
+        barber = shops.first;
+        shopId = barber!.id;
+        _applyBarber(barber!);
+      }
+
+      final detail = await catalog.loadShop(shopId);
+      final shop = detail.shop;
+      shopName = shop['name'] as String? ?? shopName;
+      shopImage = shop['image_url'] as String? ?? shopImage;
+      location = shop['address'] as String? ?? location;
+      description = shop['description'] as String? ?? '';
+      rating =
+          '${(shop['rating'] as num?)?.toStringAsFixed(1) ?? '0.0'}'
+          '  (${shop['review_count'] ?? 0})';
+
+      openingHours.assignAll(
+        detail.hours.map((row) {
+          const dayNames = [
+            'Senin',
+            'Selasa',
+            'Rabu',
+            'Kamis',
+            'Jumat',
+            'Sabtu',
+            'Minggu',
+          ];
+          final open = (row['open_time'] as String?)?.substring(0, 5) ?? '-';
+          final close = (row['close_time'] as String?)?.substring(0, 5) ?? '-';
+          return (
+            day: dayNames[(row['day_of_week'] as num).toInt()],
+            hours: row['is_closed'] == true
+                ? 'Tutup'
+                : '${open.replaceAll(':', '.')} - ${close.replaceAll(':', '.')}',
+          );
+        }),
+      );
+
+      services.assignAll(
+        detail.services.map(
+          (row) => (
+            name: row['name'] as String,
+            description: row['description'] as String? ?? '',
+            price: formatRupiah((row['price'] as num).toInt()),
+            image: row['image_url'] as String? ?? '',
+          ),
+        ),
+      );
+
+      teamMembers.assignAll(
+        detail.barbers.map(
+          (row) => (
+            name: row['name'] as String,
+            role: row['role'] as String? ?? 'Barber',
+            rating: ((row['rating'] as num?)?.toDouble() ?? 0).toStringAsFixed(
+              1,
+            ),
+            image: row['image_url'] as String? ?? '',
+          ),
+        ),
+      );
+
+      reviews.assignAll(
+        detail.reviews.map((row) {
+          final profile = row['public_profiles'] as Map?;
+          return (
+            name: profile?['full_name'] as String? ?? 'Customer',
+            rating: (row['rating'] as num?)?.toDouble() ?? 0,
+            comment: row['comment'] as String? ?? '',
+            image: profile?['avatar_url'] as String? ?? '',
+          );
+        }),
+      );
+
+      isFavorite.value = await catalog.isFavorite(shopId);
+      await _loadSchedule();
+      ready.value = true;
+    } catch (_) {
+      ready.value = true;
+    }
+  }
 
   void selectTab(int index) {
     selectedTab.value = index;
+    if (index == 2) _loadSchedule();
   }
 
-  void bookNow() {}
+  /// Booking toko pada hari yang dipilih, dipakai tab Jadwal.
+  Future<void> _loadSchedule() async {
+    if (shopId.isEmpty) return;
+    try {
+      final rows = await catalog.loadDayBookings(shopId, scheduleDay.value);
+      scheduleBookings.assignAll(
+        rows.map((row) {
+          final scheduled = DateTime.parse(
+            row['scheduled_at'] as String,
+          ).toLocal();
+          return ServiceBooking(
+            time:
+                '${scheduled.hour.toString().padLeft(2, '0')}.'
+                '${scheduled.minute.toString().padLeft(2, '0')}',
+            name: row['barber_name'] as String? ?? 'Barber',
+            service: 'Sudah dibooking',
+            image: row['barber_image'] as String? ?? '',
+            color: Colors.teal,
+          );
+        }),
+      );
+    } catch (_) {
+      scheduleBookings.clear();
+    }
+  }
+
+  void changeScheduleDay(DateTime day) {
+    scheduleDay.value = day;
+    _loadSchedule();
+  }
+
+  Future<void> toggleFavorite() async {
+    if (shopId.isEmpty) return;
+    try {
+      isFavorite.value = await catalog.toggleFavorite(shopId);
+      Get.snackbar(
+        'Favorit',
+        isFavorite.value
+            ? '$shopName ditambahkan ke favorit.'
+            : '$shopName dihapus dari favorit.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
+    } catch (_) {
+      Get.snackbar(
+        'Favorit',
+        'Gagal menyimpan favorit.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
+    }
+  }
+
+  void openChat() {
+    Get.toNamed(
+      Routes.CHAT_ROOM,
+      arguments: {'shopId': shopId, 'name': shopName, 'image': shopImage},
+    );
+  }
+
+  void openMaps() {
+    final value = barber;
+    if (value?.latitude == null || value?.longitude == null) {
+      Get.snackbar(
+        'Peta',
+        'Lokasi toko belum diatur.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
+      return;
+    }
+    openMapLocation(value!.latitude!, value.longitude!, shopName);
+  }
+
+  void shareShop() {
+    final value = barber;
+    shareText(
+      '${value?.name ?? shopName}\n${location}\n'
+      'Buka SalonHub untuk booking.',
+    );
+  }
+
+  void bookNow() {
+    final value = barber;
+    if (value == null) {
+      Get.snackbar(
+        'Booking',
+        'Barbershop belum siap, coba lagi.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
+      return;
+    }
+    Get.toNamed(Routes.BOOK_APPOINTMENT, arguments: value);
+  }
 }

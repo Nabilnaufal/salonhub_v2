@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
 
 import '../controllers/chat_controller.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 
 class ChatView extends GetView<ChatController> {
   const ChatView({super.key});
@@ -184,7 +185,7 @@ class ChatView extends GetView<ChatController> {
               1,
               0,
             ]),
-            child: Image.asset(image, width: 48, height: 48, fit: BoxFit.cover),
+            child: AppPhoto(image, width: 48, height: 48, fit: BoxFit.cover),
           ),
         ),
         Positioned(

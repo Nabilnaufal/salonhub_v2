@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+
 import 'package:salonhub_v2/app/routes/app_pages.dart';
 
 class PaymentMethod {
@@ -16,15 +17,19 @@ class PaymentMethod {
 class AppointmentPaymentController extends GetxController {
   final selectedPaymentIndex = 0.obs;
 
-  DateTime appointmentMonth = DateTime(2026, 1);
-  int appointmentDate = 15;
+  String bookingId = '';
+  String bookingCode = '';
+  String shopName = '';
+  String shopImage = '';
+  String shopLocation = '';
+  String shopRating = '';
+  DateTime appointmentDate = DateTime.now();
   String appointmentTime = '08.00';
-  String stylistName = 'Alan';
-  String stylistImage = 'lib/assets/barbershop_haircut_2.jpg';
-  String serviceName = 'Potong rambut dasar';
-  int servicePrice = 20000;
-
-  final serviceFeePrice = 25000;
+  String stylistName = 'Barber';
+  String stylistImage = '';
+  String serviceName = '';
+  int servicePrice = 0;
+  int serviceFeePrice = 25000;
 
   final paymentMethods = const [
     PaymentMethod(
@@ -91,30 +96,11 @@ class AppointmentPaymentController extends GetxController {
   int get totalPrice => servicePrice + serviceFeePrice;
 
   String get appointmentDateLabel {
-    final date = DateTime(
-      appointmentMonth.year,
-      appointmentMonth.month,
-      appointmentDate,
-    );
-    final dayName = _dayNames[date.weekday % 7];
-    final monthName = _monthNames[date.month - 1];
+    final dayName = _dayNames[appointmentDate.weekday % 7];
+    final monthName = _monthNames[appointmentDate.month - 1];
 
-    return '$dayName, ${date.day} $monthName ${date.year} - '
-        '$appointmentTime WIB';
-  }
-
-  String get bookingCode {
-    final date = DateTime(
-      appointmentMonth.year,
-      appointmentMonth.month,
-      appointmentDate,
-    );
-    final year = (date.year % 100).toString().padLeft(2, '0');
-    final month = date.month.toString().padLeft(2, '0');
-    final day = date.day.toString().padLeft(2, '0');
-    final time = appointmentTime.replaceAll('.', '');
-
-    return 'SBH-$year$month$day-$time';
+    return '$dayName, ${appointmentDate.day} $monthName '
+        '${appointmentDate.year} - $appointmentTime WIB';
   }
 
   void selectPayment(int index) {
@@ -130,7 +116,9 @@ class AppointmentPaymentController extends GetxController {
       arguments: {
         'methodName': method.name,
         'methodImage': method.image,
+        'bookingId': bookingId,
         'bookingCode': bookingCode,
+        'shopName': shopName,
         'totalPrice': totalPrice,
         'appointmentDateLabel': appointmentDateLabel,
         'stylistName': stylistName,
@@ -158,43 +146,47 @@ class AppointmentPaymentController extends GetxController {
 
   void _readAppointmentArguments() {
     final arguments = Get.arguments;
-    if (arguments is! Map) {
-      return;
-    }
+    if (arguments is! Map) return;
 
-    final month = arguments['month'];
-    if (month is DateTime) {
-      appointmentMonth = DateTime(month.year, month.month);
-    }
+    final code = arguments['bookingCode'];
+    if (code is String) bookingCode = code;
+
+    final id = arguments['bookingId'];
+    if (id is String) bookingId = id;
+
+    final name = arguments['shopName'];
+    if (name is String) shopName = name;
+
+    final image = arguments['shopImage'];
+    if (image is String) shopImage = image;
+
+    final location = arguments['shopLocation'];
+    if (location is String) shopLocation = location;
+
+    final rating = arguments['shopRating'];
+    if (rating is String) shopRating = rating;
 
     final date = arguments['date'];
-    if (date is int) {
+    if (date is DateTime) {
       appointmentDate = date;
-    }
-
-    final time = arguments['time'];
-    if (time is String) {
-      appointmentTime = time;
+      appointmentTime =
+          '${date.hour.toString().padLeft(2, '0')}.'
+          '${date.minute.toString().padLeft(2, '0')}';
     }
 
     final selectedStylistName = arguments['stylistName'];
-    if (selectedStylistName is String) {
-      stylistName = selectedStylistName;
-    }
+    if (selectedStylistName is String) stylistName = selectedStylistName;
 
     final selectedStylistImage = arguments['stylistImage'];
-    if (selectedStylistImage is String) {
-      stylistImage = selectedStylistImage;
-    }
+    if (selectedStylistImage is String) stylistImage = selectedStylistImage;
 
-    final name = arguments['serviceName'];
-    if (name is String) {
-      serviceName = name;
-    }
+    final service = arguments['serviceName'];
+    if (service is String) serviceName = service;
 
     final price = arguments['servicePrice'];
-    if (price is int) {
-      servicePrice = price;
-    }
+    if (price is int) servicePrice = price;
+
+    final fee = arguments['serviceFeePrice'];
+    if (fee is int) serviceFeePrice = fee;
   }
 }

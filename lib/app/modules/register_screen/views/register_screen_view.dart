@@ -21,17 +21,19 @@ class RegisterScreenView extends GetView<RegisterScreenController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const AppTextField(
+          AppTextField(
             label: 'Nama',
             hintText: 'nabil real',
             iconPath: 'lib/assets/icons/User.svg',
+            controller: controller.nameController,
             textInputAction: TextInputAction.next,
           ),
           const SizedBox(height: 12),
-          const AppTextField(
+          AppTextField(
             label: 'Email',
             hintText: 'nabil@gmail.com',
             iconPath: 'lib/assets/icons/Vector.svg',
+            controller: controller.emailController,
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
           ),
@@ -39,6 +41,7 @@ class RegisterScreenView extends GetView<RegisterScreenController> {
           AppTextField(
             label: 'Nomor handphone',
             hintText: '89568000000',
+            controller: controller.phoneController,
             prefixIcon: const PhoneCountryCodePrefix(),
             prefixIconConstraints: const BoxConstraints(
               minWidth: 82,
@@ -57,6 +60,7 @@ class RegisterScreenView extends GetView<RegisterScreenController> {
               hintText: '********',
               iconPath: 'lib/assets/icons/Key Minimalistic.svg',
               obscureText: controller.isCreatePasswordObscured.value,
+              controller: controller.passwordController,
               textInputAction: TextInputAction.next,
               suffixIcon: IconButton(
                 onPressed: controller.toggleCreatePasswordVisibility,
@@ -77,6 +81,7 @@ class RegisterScreenView extends GetView<RegisterScreenController> {
               hintText: '********',
               iconPath: 'lib/assets/icons/Key Minimalistic.svg',
               obscureText: controller.isConfirmPasswordObscured.value,
+              controller: controller.confirmPasswordController,
               textInputAction: TextInputAction.done,
               suffixIcon: IconButton(
                 onPressed: controller.toggleConfirmPasswordVisibility,

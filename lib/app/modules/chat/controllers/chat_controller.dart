@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import 'package:salonhub_v2/app/routes/app_pages.dart';
+import 'package:salonhub_v2/app/services/catalog_service.dart';
 
 class ChatConversation {
   const ChatConversation({
+    this.shopId = '',
     required this.name,
     required this.message,
     required this.time,
@@ -12,6 +15,7 @@ class ChatConversation {
     this.isRead = false,
   });
 
+  final String shopId;
   final String name;
   final String message;
   final String time;
@@ -21,66 +25,64 @@ class ChatConversation {
 }
 
 class ChatController extends GetxController {
+  final catalog = Get.find<CatalogService>();
+
   final searchController = TextEditingController();
   final searchQuery = ''.obs;
+  final isLoading = false.obs;
 
-  final conversations = const [
-    ChatConversation(
-      name: 'Varcity Barbershop',
-      message: 'Saya ingin konsultasi tentang gaya rambut terbaru...',
-      time: '16.30',
-      image: 'lib/assets/barbershop_haircut_3.jpg',
-      isRead: true,
-    ),
-    ChatConversation(
-      name: 'Twinsky Monkey Barber',
-      message: 'Apakah ada rekomendasi untuk rambut saya?',
-      time: '21.30',
-      image: 'lib/assets/barbershop_exterior_1.jpg',
-      isRead: true,
-    ),
-    ChatConversation(
-      name: 'Barberman Haircut',
-      message: 'Maaf, kami buka dari jam 7 sampai 9 malam.',
-      time: '18.00',
-      image: 'lib/assets/barbershop_interior_2.jpg',
-      unreadCount: 2,
-    ),
-    ChatConversation(
-      name: 'Alana Barbershop',
-      message: 'Kami merekomendasikan gaya rambut ini untukmu.',
-      time: '12.00',
-      image: 'lib/assets/barbershop_haircut_1.jpg',
-      unreadCount: 1,
-    ),
-    ChatConversation(
-      name: 'Varcity Barbershop',
-      message: 'Terima kasih sudah berkunjung ke tempat kami.',
-      time: '08.53',
-      image: 'lib/assets/barbershop_interior_1.jpg',
-      unreadCount: 1,
-    ),
-    ChatConversation(
-      name: 'Varcity Barbershop',
-      message: 'Mohon maaf, hari ini kami sedang libur.',
-      time: '09.24',
-      image: 'lib/assets/barbershop_haircut_2.jpg',
-      unreadCount: 1,
-    ),
-    ChatConversation(
-      name: 'Varcity Barbershop',
-      message: 'Kami siap melayani kebutuhan grooming kamu.',
-      time: '11.57',
-      image: 'lib/assets/barbershop_haircut_1.jpg',
-      unreadCount: 1,
-    ),
-  ];
+  final conversations = <ChatConversation>[].obs;
+
+  /// ID percakapan per toko, dipakai saat membuka room.
+  final _conversationIds = <String, String>{};
+
+  @override
+  void onInit() {
+    load();
+    searchController.addListener(_onSearchChanged);
+    super.onInit();
+  }
+
+  Future<void> load() async {
+    isLoading.value = true;
+    try {
+      final rows = await catalog.loadConversations();
+      _conversationIds
+        ..clear()
+        ..addAll({
+          for (final row in rows) row['shop_id'] as String: row['id'] as String,
+        });
+      conversations.assignAll(
+        rows.map((row) {
+          final lastAt = DateTime.tryParse(
+            row['last_message_at'] as String? ?? '',
+          );
+          return ChatConversation(
+            shopId: row['shop_id'] as String,
+            name: row['shop_name'] as String? ?? 'Barbershop',
+            message: (row['last_message'] as String?)?.isNotEmpty == true
+                ? row['last_message'] as String
+                : 'Mulai percakapan',
+            time: lastAt == null
+                ? ''
+                : '${lastAt.toLocal().hour.toString().padLeft(2, '0')}.'
+                      '${lastAt.toLocal().minute.toString().padLeft(2, '0')}',
+            image: row['shop_image'] as String? ?? '',
+            unreadCount: (row['unread'] as num?)?.toInt() ?? 0,
+            isRead: ((row['unread'] as num?)?.toInt() ?? 0) == 0,
+          );
+        }),
+      );
+    } catch (_) {
+      // Daftar kosong bila gagal memuat.
+    } finally {
+      isLoading.value = false;
+    }
+  }
 
   List<ChatConversation> get filteredConversations {
     final query = searchQuery.value.trim().toLowerCase();
-    if (query.isEmpty) {
-      return conversations;
-    }
+    if (query.isEmpty) return conversations;
 
     return conversations
         .where(
@@ -92,12 +94,6 @@ class ChatController extends GetxController {
   }
 
   @override
-  void onInit() {
-    searchController.addListener(_onSearchChanged);
-    super.onInit();
-  }
-
-  @override
   void onClose() {
     searchController
       ..removeListener(_onSearchChanged)
@@ -105,11 +101,22 @@ class ChatController extends GetxController {
     super.onClose();
   }
 
-  void openConversation(ChatConversation conversation) {
-    Get.toNamed(
+  Future<void> openConversation(ChatConversation conversation) async {
+    final conversationId = _conversationIds[conversation.shopId];
+    if (conversationId != null) {
+      // Tandai sudah dibaca supaya badge hilang saat kembali.
+      await catalog.markConversationRead(conversationId);
+    }
+    await Get.toNamed(
       Routes.CHAT_ROOM,
-      arguments: {'name': conversation.name, 'image': conversation.image},
+      arguments: {
+        'shopId': conversation.shopId,
+        'conversationId': conversationId,
+        'name': conversation.name,
+        'image': conversation.image,
+      },
     );
+    load();
   }
 
   void changeNavigation(int index) {

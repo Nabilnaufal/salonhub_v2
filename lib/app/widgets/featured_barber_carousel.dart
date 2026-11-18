@@ -12,7 +12,7 @@ class FeaturedBarberCarousel extends StatefulWidget {
   });
 
   final List<Barber> barbers;
-  final VoidCallback? onBarberTap;
+  final ValueChanged<Barber>? onBarberTap;
 
   @override
   State<FeaturedBarberCarousel> createState() => _FeaturedBarberCarouselState();
@@ -49,7 +49,9 @@ class _FeaturedBarberCarouselState extends State<FeaturedBarberCarousel> {
             itemBuilder: (context, index) {
               return FeaturedBarber(
                 barber: widget.barbers[index],
-                onTap: widget.onBarberTap,
+                onTap: widget.onBarberTap == null
+                    ? null
+                    : () => widget.onBarberTap!(widget.barbers[index]),
               );
             },
           ),

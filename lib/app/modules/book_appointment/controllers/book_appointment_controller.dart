@@ -1,13 +1,19 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
+import 'package:salonhub_v2/app/models/barber.dart';
 import 'package:salonhub_v2/app/routes/app_pages.dart';
+import 'package:salonhub_v2/app/services/catalog_service.dart';
 
 class AppointmentStylist {
   const AppointmentStylist({
+    this.id = '',
     required this.name,
     required this.specialty,
     required this.image,
   });
 
+  final String id;
   final String name;
   final String specialty;
   final String image;
@@ -15,74 +21,37 @@ class AppointmentStylist {
 
 class AppointmentService {
   const AppointmentService({
+    this.id = '',
     required this.name,
     required this.price,
     required this.description,
   });
 
+  final String id;
   final String name;
   final int price;
   final String description;
 }
 
 class BookAppointmentController extends GetxController {
-  final RxInt selectedDate = 15.obs;
-  final selectedStylistIndex = 0.obs;
-  final selectedServiceIndexes = <int>{0}.obs;
+  final catalog = Get.find<CatalogService>();
+
+  String shopId = '';
+  String shopName = '';
+  String shopImage = '';
+  String shopLocation = '';
+  String shopRating = '';
+
+  final now = DateTime.now();
+  late final displayedMonth = DateTime(now.year, now.month).obs;
+  late final selectedDate = now.day.obs;
+  final selectedStylistIndex = Rxn<int>();
+  final selectedServiceIndexes = <int>{}.obs;
   final selectedTime = '08.00'.obs;
+  final isLoading = false.obs;
 
-  final displayedMonth = DateTime(2026, 1).obs;
-
-  final stylists = const [
-    AppointmentStylist(
-      name: 'Alan',
-      specialty: 'Potong rambut',
-      image: 'lib/assets/barbershop_haircut_2.jpg',
-    ),
-    AppointmentStylist(
-      name: 'Robert',
-      specialty: 'Styling',
-      image: 'lib/assets/barbershop_exterior_1.jpg',
-    ),
-    AppointmentStylist(
-      name: 'Sergio',
-      specialty: 'Pewarnaan',
-      image: 'lib/assets/barbershop_haircut_1.jpg',
-    ),
-    AppointmentStylist(
-      name: 'Karl',
-      specialty: 'Perawatan',
-      image: 'lib/assets/barbershop_interior_2.jpg',
-    ),
-  ];
-
-  final services = const [
-    AppointmentService(
-      name: 'Potong rambut dasar',
-      price: 20000,
-      description: 'Potong rambut & vitamin',
-    ),
-    AppointmentService(
-      name: 'Potong rambut anak',
-      price: 15000,
-      description: 'Potong rambut anak',
-    ),
-    AppointmentService(
-      name: 'Pewarnaan rambut',
-      price: 30000,
-      description: 'Warna rambut pilihan',
-    ),
-    AppointmentService(
-      name: 'Perawatan rambut',
-      price: 10000,
-      description: 'Perawatan rambut',
-    ),
-    AppointmentService(
-      name: 'Cuci rambut',
-      price: 10000,
-      description: 'Keramas & pengeringan',
-    ),
-  ];
+  final stylists = <AppointmentStylist>[].obs;
+  final services = <AppointmentService>[].obs;
 
   final availableTimes = const [
     '08.00',
@@ -99,10 +68,75 @@ class BookAppointmentController extends GetxController {
     '17.30',
   ];
 
-  final unavailableTimes = const {'09.00', '16.00'};
+  final unavailableTimes = <String>{}.obs;
 
-  AppointmentStylist get selectedStylist =>
-      stylists[selectedStylistIndex.value];
+  @override
+  void onInit() {
+    final arguments = Get.arguments;
+    if (arguments is Barber) {
+      shopId = arguments.id;
+      shopName = arguments.name;
+      shopImage = arguments.image;
+    } else if (arguments is Map && arguments['shopId'] is String) {
+      shopId = arguments['shopId'] as String;
+    }
+    _load();
+    super.onInit();
+  }
+
+  Future<void> _load() async {
+    isLoading.value = true;
+    try {
+      if (shopId.isEmpty) {
+        final shops = await catalog.loadShops();
+        if (shops.isEmpty) return;
+        shopId = shops.first.id;
+        shopName = shops.first.name;
+        shopImage = shops.first.image;
+      }
+
+      final detail = await catalog.loadShop(shopId);
+      shopName = detail.shop['name'] as String? ?? shopName;
+      shopImage = detail.shop['image_url'] as String? ?? shopImage;
+      shopLocation = detail.shop['address'] as String? ?? '';
+      shopRating =
+          '${(detail.shop['rating'] as num?)?.toStringAsFixed(1) ?? '0.0'}'
+          '  (${detail.shop['review_count'] ?? 0})';
+
+      stylists.assignAll(
+        detail.barbers.map(
+          (row) => AppointmentStylist(
+            id: row['id'] as String,
+            name: row['name'] as String,
+            specialty: row['role'] as String? ?? 'Barber',
+            image: row['image_url'] as String? ?? '',
+          ),
+        ),
+      );
+      services.assignAll(
+        detail.services.map(
+          (row) => AppointmentService(
+            id: row['id'] as String,
+            name: row['name'] as String,
+            price: (row['price'] as num).toInt(),
+            description: row['description'] as String? ?? '',
+          ),
+        ),
+      );
+
+      if (stylists.isNotEmpty) selectedStylistIndex.value = 0;
+      if (services.isNotEmpty) selectedServiceIndexes.add(0);
+      await _loadBookedSlots();
+    } finally {
+      isLoading.value = false;
+      update();
+    }
+  }
+
+  AppointmentStylist? get selectedStylist =>
+      selectedStylistIndex.value == null || stylists.isEmpty
+      ? null
+      : stylists[selectedStylistIndex.value!];
 
   List<AppointmentService> get selectedServices => services
       .asMap()
@@ -120,6 +154,57 @@ class BookAppointmentController extends GetxController {
   void selectDate(int date) {
     selectedDate.value = date;
     update();
+    _loadBookedSlots();
+  }
+
+  DateTime _asDateTime(String time) {
+    final parts = time.split('.');
+    return DateTime(
+      selectedDateTime.year,
+      selectedDateTime.month,
+      selectedDateTime.day,
+      int.parse(parts[0]),
+      int.parse(parts[1]),
+    );
+  }
+
+  DateTime get selectedDateTime => DateTime(
+    displayedMonth.value.year,
+    displayedMonth.value.month,
+    selectedDate.value,
+  );
+
+  Future<void> _loadBookedSlots() async {
+    if (shopId.isEmpty) return;
+    try {
+      final booked = await catalog.bookedSlots(
+        shopId,
+        selectedDateTime,
+        barberId: selectedStylist?.id,
+      );
+      // Jam yang sudah lewat untuk hari ini juga tidak bisa dipilih.
+      final now = DateTime.now();
+      final isToday =
+          selectedDateTime.year == now.year &&
+          selectedDateTime.month == now.month &&
+          selectedDateTime.day == now.day;
+      final past = isToday
+          ? availableTimes
+                .where((time) => _asDateTime(time).isBefore(now))
+                .toSet()
+          : const <String>{};
+
+      unavailableTimes.assignAll({...booked, ...past});
+      if (unavailableTimes.contains(selectedTime.value)) {
+        final free = availableTimes.firstWhereOrNull(
+          (time) => !unavailableTimes.contains(time),
+        );
+        if (free != null) selectedTime.value = free;
+      }
+      update();
+    } catch (_) {
+      unavailableTimes.clear();
+    }
   }
 
   void previousMonth() {
@@ -143,11 +228,13 @@ class BookAppointmentController extends GetxController {
     displayedMonth.value = nextMonth;
     selectedDate.value = selectedDay;
     update();
+    _loadBookedSlots();
   }
 
   void selectStylist(int index) {
     selectedStylistIndex.value = index;
     update();
+    _loadBookedSlots();
   }
 
   void selectService(int index) {
@@ -186,18 +273,66 @@ class BookAppointmentController extends GetxController {
 
   String get serviceFeePrice => formatRupiah(25000);
 
-  void submitBooking() {
-    Get.toNamed(
-      Routes.APPOINTMENT_PAYMENT,
-      arguments: {
-        'date': selectedDate.value,
-        'month': displayedMonth.value,
-        'time': selectedTime.value,
-        'stylistName': selectedStylist.name,
-        'stylistImage': selectedStylist.image,
-        'serviceName': selectedServiceName,
-        'servicePrice': selectedServicesPrice,
-      },
+  Future<void> submitBooking() async {
+    final selected = selectedServices;
+    if (selected.isEmpty) {
+      Get.snackbar(
+        'Pilih layanan',
+        'Pilih minimal satu layanan.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
+      return;
+    }
+
+    final parts = selectedTime.value.split('.');
+    final scheduledAt = DateTime(
+      displayedMonth.value.year,
+      displayedMonth.value.month,
+      selectedDate.value,
+      int.parse(parts[0]),
+      int.parse(parts[1]),
     );
+
+    isLoading.value = true;
+    try {
+      final booking = await catalog.createBooking(
+        shopId: shopId,
+        serviceIds: selected.map((service) => service.id).toList(),
+        scheduledAt: scheduledAt,
+        barberId: selectedStylist?.id,
+      );
+
+      Get.toNamed(
+        Routes.APPOINTMENT_PAYMENT,
+        arguments: {
+          'bookingId': booking['id'],
+          'bookingCode': booking['code'],
+          'shopName': shopName,
+          'shopImage': shopImage,
+          'shopLocation': shopLocation,
+          'shopRating': shopRating,
+          'date': scheduledAt,
+          'stylistName': selectedStylist?.name ?? 'Barber',
+          'stylistImage': selectedStylist?.image ?? '',
+          'serviceName': selectedServiceName,
+          'servicePrice': (booking['subtotal'] as num).toInt(),
+          'serviceFeePrice': (booking['service_fee'] as num).toInt(),
+          'totalPrice': (booking['total_price'] as num).toInt(),
+        },
+      );
+    } catch (_) {
+      Get.snackbar(
+        'Booking gagal',
+        'Jadwal tidak tersedia atau koneksi bermasalah.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+        backgroundColor: const Color(0xFFFFF1F2),
+        colorText: const Color(0xFF9F1239),
+      );
+    } finally {
+      isLoading.value = false;
+      update();
+    }
   }
 }

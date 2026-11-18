@@ -6,6 +6,7 @@ import 'package:salonhub_v2/app/widgets/appointment_order_summary.dart';
 import 'package:salonhub_v2/app/widgets/payment_method_card.dart';
 
 import '../controllers/appointment_payment_controller.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 
 class AppointmentPaymentView extends GetView<AppointmentPaymentController> {
   const AppointmentPaymentView({super.key});
@@ -94,8 +95,8 @@ class AppointmentPaymentView extends GetView<AppointmentPaymentController> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: Image.asset(
-              'lib/assets/barbershop_haircut_2.jpg',
+            child: AppPhoto(
+              controller.shopImage,
               width: 76,
               height: 76,
               fit: BoxFit.cover,
@@ -107,7 +108,7 @@ class AppointmentPaymentView extends GetView<AppointmentPaymentController> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Masterpiece Barbershop - Haircut styling',
+                  controller.shopName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.body3.copyWith(
@@ -118,10 +119,10 @@ class AppointmentPaymentView extends GetView<AppointmentPaymentController> {
                 const SizedBox(height: 7),
                 _shopInfoRow(
                   icon: 'Map Point.svg',
-                  text: 'Joga Expo Centre (2 km)',
+                  text: controller.shopLocation,
                 ),
                 const SizedBox(height: 5),
-                _shopInfoRow(icon: 'Star.svg', text: '5.0  (24)'),
+                _shopInfoRow(icon: 'Star.svg', text: controller.shopRating),
               ],
             ),
           ),
@@ -249,7 +250,7 @@ class AppointmentPaymentView extends GetView<AppointmentPaymentController> {
     return Row(
       children: [
         ClipOval(
-          child: Image.asset(image, width: 48, height: 48, fit: BoxFit.cover),
+          child: AppPhoto(image, width: 48, height: 48, fit: BoxFit.cover),
         ),
         const SizedBox(width: 12),
         Expanded(

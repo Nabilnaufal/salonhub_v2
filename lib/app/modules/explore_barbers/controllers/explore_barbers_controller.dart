@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import 'package:salonhub_v2/app/models/barber.dart';
+import 'package:salonhub_v2/app/routes/app_pages.dart';
+import 'package:salonhub_v2/app/services/catalog_service.dart';
+import 'package:salonhub_v2/app/widgets/filter_bottom_sheet.dart';
 
 class ExploreBarbersController extends GetxController {
-  ExploreBarbersController({required this.barbers});
+  final catalog = Get.find<CatalogService>();
 
-  final List<Barber> barbers;
   final searchController = TextEditingController();
   final searchQuery = ''.obs;
   final selectedCategory = 0.obs;
+  final filters = Rxn<FilterOptions>();
+  final isLoading = false.obs;
+  final onlyFavorites = false.obs;
+  final favoriteIds = <String>{}.obs;
 
   final categories = const [
     'Semua Layanan',
@@ -18,42 +25,56 @@ class ExploreBarbersController extends GetxController {
     'Treatment',
   ];
 
-  final _dummyBarbers = const [
-    Barber(
-      name: 'Northside Barber Club',
-      description: 'Medan Petisah',
-      distance: '6.0 km',
-      rating: '4.8',
-      image: 'lib/assets/barbershop_exterior_1.jpg',
-    ),
-    Barber(
-      name: 'Gentlemen House Barbershop',
-      description: 'Medan Polonia',
-      distance: '7.5 km',
-      rating: '4.7',
-      image: 'lib/assets/barbershop_haircut_1.jpg',
-    ),
-    Barber(
-      name: 'The Standard Barber',
-      description: 'Medan Tuntungan',
-      distance: '9.0 km',
-      rating: '4.6',
-      image: 'lib/assets/barbershop_interior_2.jpg',
-    ),
-  ];
+  @override
+  void onInit() {
+    final arguments = Get.arguments;
+    if (arguments is String && arguments.trim().isNotEmpty) {
+      searchController.text = arguments;
+      searchQuery.value = arguments;
+    }
+    load();
+    super.onInit();
+  }
+
+  Future<void> load() async {
+    isLoading.value = true;
+    try {
+      await catalog.loadShops();
+      favoriteIds.assignAll(await catalog.favoriteShopIds());
+    } finally {
+      isLoading.value = false;
+    }
+  }
 
   List<Barber> get filteredBarbers {
     final query = searchQuery.value.trim().toLowerCase();
-    final allBarbers = [...barbers, ..._dummyBarbers];
+    final filter = filters.value;
+    final chip = selectedCategory.value == 0
+        ? null
+        : categories[selectedCategory.value].toLowerCase();
 
-    if (query.isEmpty) {
-      return allBarbers;
-    }
-
-    return allBarbers.where((barber) {
-      return barber.name.toLowerCase().contains(query) ||
-          barber.description.toLowerCase().contains(query);
+    return catalog.shops.where((shop) {
+      if (onlyFavorites.value && !favoriteIds.contains(shop.id)) return false;
+      if (filter != null) {
+        if (double.parse(shop.rating) < filter.minimumRating) return false;
+        if (shop.distanceKm < filter.nearestKm) return false;
+        if (shop.distanceKm > filter.farthestKm) return false;
+        final options = filter.category?.toLowerCase();
+        if (options != null && !_hasService(shop.id, options)) return false;
+      }
+      if (chip != null) {
+        final keyword = chip == 'potong rambut' ? 'haircut' : chip;
+        if (!_hasService(shop.id, keyword)) return false;
+      }
+      if (query.isEmpty) return true;
+      return shop.name.toLowerCase().contains(query) ||
+          shop.description.toLowerCase().contains(query);
     }).toList();
+  }
+
+  bool _hasService(String shopId, String keyword) {
+    final names = catalog.serviceNamesByShop[shopId] ?? const <String>{};
+    return names.any((name) => name.contains(keyword));
   }
 
   void changeSearch(String value) {
@@ -62,6 +83,34 @@ class ExploreBarbersController extends GetxController {
 
   void changeCategory(int index) {
     selectedCategory.value = index;
+  }
+
+  Future<void> openFilter(BuildContext context) async {
+    final result = await FilterBottomSheet.show(
+      context,
+      current: filters.value,
+    );
+    if (result == null) return;
+    filters.value = result.isEmpty ? null : result;
+  }
+
+  bool get hasActiveFilter =>
+      filters.value != null ||
+      selectedCategory.value != 0 ||
+      onlyFavorites.value;
+
+  void clearFilter() {
+    filters.value = null;
+    selectedCategory.value = 0;
+    onlyFavorites.value = false;
+  }
+
+  void toggleOnlyFavorites() {
+    onlyFavorites.toggle();
+  }
+
+  void openBarber(Barber barber) {
+    Get.toNamed(Routes.BARBER_DETAIL, arguments: barber);
   }
 
   @override

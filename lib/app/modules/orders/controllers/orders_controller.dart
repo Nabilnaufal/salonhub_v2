@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 import 'package:salonhub_v2/app/models/barber.dart';
 import 'package:salonhub_v2/app/routes/app_pages.dart';
+import 'package:salonhub_v2/app/services/external_actions.dart';
+import 'package:salonhub_v2/app/services/catalog_service.dart';
 
 enum BookingStatus { booked, waiting, onProcess, finished }
 
@@ -61,6 +65,8 @@ class BookingService {
 
 class BookingOrder {
   const BookingOrder({
+    this.id = '',
+    this.shopId = '',
     required this.shopName,
     required this.location,
     required this.rating,
@@ -71,9 +77,12 @@ class BookingOrder {
     required this.barberDescription,
     required this.barberImage,
     required this.status,
+    this.isCancelled = false,
     this.timeEstimation,
   });
 
+  final String id;
+  final String shopId;
   final String shopName;
   final String location;
   final String rating;
@@ -84,6 +93,7 @@ class BookingOrder {
   final String barberDescription;
   final String barberImage;
   final BookingStatus status;
+  final bool isCancelled;
   final String? timeEstimation;
 
   BookingOrder copyWith({
@@ -92,6 +102,8 @@ class BookingOrder {
     List<BookingService>? services,
   }) {
     return BookingOrder(
+      id: id,
+      shopId: shopId,
       shopName: shopName,
       location: location,
       rating: rating,
@@ -102,83 +114,163 @@ class BookingOrder {
       barberDescription: barberDescription,
       barberImage: barberImage,
       status: status ?? this.status,
+      isCancelled: isCancelled,
       timeEstimation: timeEstimation ?? this.timeEstimation,
     );
   }
 }
 
 class OrdersController extends GetxController {
+  final catalog = Get.find<CatalogService>();
+  SupabaseClient get _client => Supabase.instance.client;
+
   final selectedTab = 0.obs;
   final isBookingCancelled = false.obs;
+  final isLoading = false.obs;
 
-  final historyBarbers = const [
-    Barber(
-      name: 'Varcity Barbershop Jogja ex The Varcher',
-      description: 'Condongcatur',
-      distance: '10 km',
-      rating: '4.5',
-      image: 'lib/assets/barbershop_haircut_3.jpg',
-    ),
-    Barber(
-      name: 'Twinsky Monkey Barber & Men Stuff',
-      description: 'Jl Taman Siswa',
-      distance: '8 km',
-      rating: '5.0',
-      image: 'lib/assets/barbershop_exterior_1.jpg',
-    ),
-    Barber(
-      name: 'Barberman - Haircut styling & massage',
-      description: 'J-Walk Centre',
-      distance: '17 km',
-      rating: '4.5',
-      image: 'lib/assets/barbershop_interior_2.jpg',
-    ),
-    Barber(
-      name: 'Alana Barbershop - Haircut massage & Spa',
-      description: 'Banguntapan',
-      distance: '5 km',
-      rating: '4.5',
-      image: 'lib/assets/barbershop_haircut_1.jpg',
-    ),
-  ];
-
-  final activeOrder = const BookingOrder(
-    shopName: 'Masterpiece Barbershop - Haircut styling',
-    location: 'Jogja Expo Centre (2 km)',
-    rating: '5.0  (24)',
-    shopImage: 'lib/assets/barbershop_haircut_2.jpg',
-    dateLabel: 'Min, 15 Jan - 08.00 WIB',
-    services: [
-      BookingService(
-        name: 'Potong rambut dasar',
-        description: 'Potong rambut dasar & vitamin',
-        image: 'lib/assets/barbershop_haircut_3.jpg',
-      ),
-    ],
-    barberName: 'Luther Hammes',
-    barberDescription: 'Spesialis potong rambut',
-    barberImage: 'lib/assets/barbershop_interior_1.jpg',
+  final historyBarbers = <Barber>[].obs;
+  final activeOrder = BookingOrder(
+    shopName: '',
+    location: '',
+    rating: '',
+    shopImage: '',
+    dateLabel: '',
+    services: const [],
+    barberName: '',
+    barberDescription: '',
+    barberImage: '',
     status: BookingStatus.booked,
   ).obs;
-
-  final historyOrder = const BookingOrder(
-    shopName: 'Masterpiece Barbershop - Haircut styling',
-    location: 'Jogja Expo Centre (2 km)',
-    rating: '5.0  (24)',
-    shopImage: 'lib/assets/barbershop_haircut_2.jpg',
-    dateLabel: 'Min, 08 Jan - 10.00 WIB',
-    services: [
-      BookingService(
-        name: 'Potong rambut dasar',
-        description: 'Potong rambut dasar & vitamin',
-        image: 'lib/assets/barbershop_haircut_3.jpg',
-      ),
-    ],
-    barberName: 'Luther Hammes',
-    barberDescription: 'Spesialis potong rambut',
-    barberImage: 'lib/assets/barbershop_interior_1.jpg',
+  var historyOrder = BookingOrder(
+    shopName: '',
+    location: '',
+    rating: '',
+    shopImage: '',
+    dateLabel: '',
+    services: const [],
+    barberName: '',
+    barberDescription: '',
+    barberImage: '',
     status: BookingStatus.finished,
   );
+
+  @override
+  void onInit() {
+    load();
+    super.onInit();
+  }
+
+  Future<void> load() async {
+    final uid = _client.auth.currentUser?.id;
+    if (uid == null) return;
+
+    isLoading.value = true;
+    try {
+      final rows = await _client
+          .from('bookings')
+          .select('*, booking_items(*), shops(*), barbers(*)')
+          .eq('customer_id', uid)
+          .order('scheduled_at', ascending: false);
+
+      final orders = rows.map(_mapBooking).toList();
+      final finished = orders
+          .where(
+            (order) =>
+                order.status == BookingStatus.finished || order.isCancelled,
+          )
+          .toList();
+
+      final latestActive = orders.where(
+        (order) => order.status != BookingStatus.finished && !order.isCancelled,
+      );
+      if (latestActive.isNotEmpty) {
+        activeOrder.value = latestActive.first;
+        isBookingCancelled.value = false;
+      }
+
+      historyBarbers.assignAll(
+        finished.map(
+          (order) => Barber(
+            id: order.shopId,
+            name: order.shopName,
+            description: order.location,
+            distance: '',
+            rating: order.rating,
+            image: order.shopImage,
+          ),
+        ),
+      );
+      if (finished.isNotEmpty) {
+        historyOrder = finished.first;
+      }
+    } catch (_) {
+      // Biarkan state kosong bila gagal memuat.
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  BookingOrder _mapBooking(Map<String, dynamic> row) {
+    final shop = row['shops'] as Map?;
+    final barber = row['barbers'] as Map?;
+    final items = (row['booking_items'] as List? ?? [])
+        .map((item) => item as Map)
+        .toList();
+    final scheduled = DateTime.parse(row['scheduled_at'] as String);
+    final shopRating = (shop?['rating'] as num?)?.toStringAsFixed(1) ?? '0.0';
+    final reviewCount = shop?['review_count'] ?? 0;
+
+    return BookingOrder(
+      id: row['id'] as String,
+      shopId: row['shop_id'] as String,
+      shopName: shop?['name'] as String? ?? 'Barbershop',
+      location: shop?['address'] as String? ?? '',
+      rating: '$shopRating  ($reviewCount)',
+      shopImage: shop?['image_url'] as String? ?? '',
+      dateLabel:
+          '${_dayLabel(scheduled)}, ${scheduled.day} '
+          '${_monthLabel(scheduled.month)} - '
+          '${scheduled.hour.toString().padLeft(2, '0')}.'
+          '${scheduled.minute.toString().padLeft(2, '0')} WIB',
+      services: items
+          .map(
+            (item) => BookingService(
+              name: item['name'] as String,
+              description: '${item['duration_minutes']} menit',
+              image: '',
+            ),
+          )
+          .toList(),
+      barberName: barber?['name'] as String? ?? 'Barber',
+      barberDescription: barber?['role'] as String? ?? 'Barber',
+      barberImage: barber?['image_url'] as String? ?? '',
+      status: BookingStatusX.fromBackend(row['status'] as String?),
+      isCancelled: row['status'] == 'cancelled',
+    );
+  }
+
+  String _dayLabel(DateTime date) {
+    const names = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+    return names[date.weekday % 7];
+  }
+
+  String _monthLabel(int month) {
+    const names = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'Mei',
+      'Jun',
+      'Jul',
+      'Agu',
+      'Sep',
+      'Okt',
+      'Nov',
+      'Des',
+    ];
+    return names[month - 1];
+  }
 
   BookingOrder get currentOrder =>
       selectedTab.value == 0 ? activeOrder.value : historyOrder;
@@ -189,8 +281,6 @@ class OrdersController extends GetxController {
     selectedTab.value = index;
   }
 
-  // Dipanggil saat status booking dari backend sudah tersedia.
-  // UI akan otomatis menyesuaikan progres dan detail statusnya.
   void updateActiveBookingStatus(
     String backendStatus, {
     String? timeEstimation,
@@ -220,7 +310,12 @@ class OrdersController extends GetxController {
       ),
     );
 
-    if (confirmed == true) {
+    if (confirmed != true) return;
+
+    try {
+      if (activeOrder.value.id.isNotEmpty) {
+        await catalog.cancelBooking(activeOrder.value.id);
+      }
       isBookingCancelled.value = true;
       Get.snackbar(
         'Pesanan dibatalkan',
@@ -228,24 +323,49 @@ class OrdersController extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
         margin: const EdgeInsets.all(16),
       );
+    } catch (_) {
+      Get.snackbar(
+        'Gagal membatalkan',
+        'Coba lagi beberapa saat.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
     }
   }
 
-  void openMaps() {
-    Get.snackbar(
-      'Peta',
-      'Lokasi barbershop siap dibuka.',
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
-    );
+  Future<void> openMaps() async {
+    final coordinates = await catalog.shopCoordinates(currentOrder.shopId);
+    if (coordinates == null) {
+      Get.snackbar(
+        'Peta',
+        'Lokasi barbershop belum diatur.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
+      return;
+    }
+    try {
+      await openMapLocation(coordinates.$1, coordinates.$2);
+    } catch (_) {
+      Get.snackbar(
+        'Peta',
+        'Tidak bisa membuka aplikasi peta.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
+    }
   }
 
   void openChat() {
-    Get.snackbar(
-      'Pesan',
-      'Fitur chat akan segera tersedia.',
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
+    final order = activeOrder.value;
+    if (order.shopId.isEmpty) return;
+    Get.toNamed(
+      Routes.CHAT_ROOM,
+      arguments: {
+        'shopId': order.shopId,
+        'name': order.shopName,
+        'image': order.shopImage,
+      },
     );
   }
 
@@ -253,6 +373,8 @@ class OrdersController extends GetxController {
     Get.toNamed(
       Routes.RATING_REVIEW,
       arguments: {
+        'bookingId': order.id,
+        'shopId': order.shopId,
         'shopName': order.shopName,
         'location': order.location,
         'rating': order.rating,

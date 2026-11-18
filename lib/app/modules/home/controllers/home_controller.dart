@@ -1,64 +1,101 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import 'package:salonhub_v2/app/models/barber.dart';
 import 'package:salonhub_v2/app/routes/app_pages.dart';
+import 'package:salonhub_v2/app/services/auth_service.dart';
+import 'package:salonhub_v2/app/services/catalog_service.dart';
+import 'package:salonhub_v2/app/widgets/filter_bottom_sheet.dart';
 
 class HomeController extends GetxController {
+  final catalog = Get.find<CatalogService>();
+  final auth = Get.find<AuthService>();
+
+  final searchController = TextEditingController();
   final selectedNavIndex = 0.obs;
+  final nearbyBarbers = <Barber>[].obs;
+  final recommendedBarbers = <Barber>[].obs;
+  final filters = Rxn<FilterOptions>();
+  final searchQuery = ''.obs;
+  final isLoading = false.obs;
 
-  final nearbyBarbers = const [
-    Barber(
-      name: 'Alana Barbershop - Haircut massage & Spa',
-      description: 'Bangun Sari',
-      distance: '5 km',
-      rating: '4.5',
-      image: 'lib/assets/barbershop_interior_1.jpg',
-    ),
-    Barber(
-      name: 'Hercha Barbershop - Haircut & Styling',
-      description: 'Jalan Karya',
-      distance: '8 km',
-      rating: '5.0',
-      image: 'lib/assets/barbershop_haircut_1.jpg',
-    ),
-    Barber(
-      name: 'Barberking - Haircut styling & massage',
-      description: 'Medan Kota',
-      distance: '12 km',
-      rating: '4.5',
-      image: 'lib/assets/barbershop_interior_2.jpg',
-    ),
-  ];
+  String get userName => auth.profile.value?.fullName ?? 'Salonhubers';
+  String? get avatarUrl => auth.profile.value?.avatarUrl;
 
-  final recommendedBarbers = const [
-    Barber(
-      name: 'Masterpiece Barbershop - Haircut styling',
-      description: 'Medan Kota',
-      distance: '5.0 km',
-      rating: '5.0',
-      image: 'lib/assets/barbershop_haircut_2.jpg',
-    ),
-    Barber(
-      name: 'Varcity Barbershop Jogja Ex The Varcoty',
-      description: 'Medan Selayang',
-      distance: '4.5 km',
-      rating: '4.5',
-      image: 'lib/assets/barbershop_haircut_3.jpg',
-    ),
-    Barber(
-      name: 'Twinsky Monkey Barber & Men Stuff',
-      description: 'Medan Baru',
-      distance: '5.0 km',
-      rating: '5.0',
-      image: 'lib/assets/barbershop_exterior_1.jpg',
-    ),
-    Barber(
-      name: 'Barreman - Haircut styling & massage',
-      description: 'Medan Timur',
-      distance: '4.5 km',
-      rating: '4.5',
-      image: 'lib/assets/barbershop_interior_1.jpg',
-    ),
-  ];
+  @override
+  void onInit() {
+    loadShops();
+    super.onInit();
+  }
+
+  Future<void> loadShops() async {
+    isLoading.value = true;
+    try {
+      final shops = await catalog.loadShops();
+      _applyShops(shops);
+    } catch (_) {
+      // Halaman tetap menampilkan state kosong bila offline.
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  void _applyShops(List<Barber> shops) {
+    final query = searchQuery.value.trim().toLowerCase();
+    final filter = filters.value;
+
+    var visible = shops;
+    if (filter != null) {
+      visible = visible
+          .where(
+            (shop) =>
+                double.parse(shop.rating) >= filter.minimumRating &&
+                shop.distanceKm >= filter.nearestKm &&
+                shop.distanceKm <= filter.farthestKm,
+          )
+          .toList();
+    }
+    if (query.isNotEmpty) {
+      visible = visible
+          .where(
+            (shop) =>
+                shop.name.toLowerCase().contains(query) ||
+                shop.description.toLowerCase().contains(query),
+          )
+          .toList();
+    }
+
+    nearbyBarbers.assignAll(visible.take(3));
+    recommendedBarbers.assignAll(
+      [...visible]..sort((a, b) => b.rating.compareTo(a.rating)),
+    );
+  }
+
+  void changeSearch(String value) {
+    searchQuery.value = value;
+    _applyShops(catalog.shops);
+  }
+
+  Future<void> openFilter(BuildContext context) async {
+    final result = await FilterBottomSheet.show(
+      context,
+      current: filters.value,
+    );
+    if (result == null) return;
+    filters.value = result.isEmpty ? null : result;
+    _applyShops(catalog.shops);
+  }
+
+  void openExplore() {
+    Get.toNamed(
+      Routes.EXPLORE_BARBERS,
+      arguments: searchQuery.value.isEmpty ? null : searchQuery.value,
+    );
+  }
+
+  void openBarber(Barber barber) {
+    Get.toNamed(Routes.BARBER_DETAIL, arguments: barber);
+  }
 
   void changeNavigation(int index) {
     if (index == 1) {
@@ -79,7 +116,13 @@ class HomeController extends GetxController {
     selectedNavIndex.value = index;
   }
 
+  @override
+  void onClose() {
+    searchController.dispose();
+    super.onClose();
+  }
+
   void openRecommendedBarbers() {
-    Get.toNamed(Routes.EXPLORE_BARBERS, arguments: recommendedBarbers);
+    Get.toNamed(Routes.EXPLORE_BARBERS);
   }
 }

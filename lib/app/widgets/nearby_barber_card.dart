@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
 import 'package:salonhub_v2/app/models/barber.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 
 class NearbyBarberCard extends StatelessWidget {
   const NearbyBarberCard({super.key, required this.barber, this.onTap});
@@ -32,7 +33,7 @@ class NearbyBarberCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(7),
-              child: Image.asset(
+              child: AppPhoto(
                 barber.image,
                 width: 76,
                 height: 76,
@@ -57,7 +58,7 @@ class NearbyBarberCard extends StatelessWidget {
                   const SizedBox(height: 5),
                   FindBarberMetaLine(
                     iconAsset: 'lib/assets/icons/Map Point.svg',
-                    text: '${barber.description} (${barber.distance})',
+                    text: barber.locationLabel,
                   ),
                   const SizedBox(height: 5),
                   FindBarberMetaLine(

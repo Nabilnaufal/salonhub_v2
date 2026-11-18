@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import 'package:salonhub_v2/app/services/catalog_service.dart';
+
 class RatingReviewController extends GetxController {
+  final catalog = Get.find<CatalogService>();
+
   final selectedRating = 4.obs;
   final selectedTags = <String>{'Secara keseluruhan baik'}.obs;
   final reviewController = TextEditingController();
+  final isBusy = false.obs;
 
   final tags = const [
     'Secara keseluruhan baik',
@@ -17,10 +22,12 @@ class RatingReviewController extends GetxController {
     'Estimasi akurat',
   ];
 
-  String shopName = 'Masterpiece Barbershop - Haircut styling';
-  String location = 'Jogja Expo Centre (2 km)';
-  String rating = '5.0  (24)';
-  String shopImage = 'lib/assets/barbershop_haircut_2.jpg';
+  String bookingId = '';
+  String shopId = '';
+  String shopName = 'Barbershop';
+  String location = '';
+  String rating = '0.0';
+  String shopImage = '';
 
   @override
   void onInit() {
@@ -46,21 +53,62 @@ class RatingReviewController extends GetxController {
     }
   }
 
-  void submitReview() {
+  Future<void> submitReview() async {
+    if (shopId.isEmpty) {
+      _showError('Data barbershop tidak ditemukan.');
+      return;
+    }
+
+    isBusy.value = true;
+    try {
+      final tagsText = selectedTags.join(', ');
+      final comment = [
+        reviewController.text.trim(),
+        if (tagsText.isNotEmpty) tagsText,
+      ].where((part) => part.isNotEmpty).join('. ');
+
+      await catalog.submitReview(
+        bookingId: bookingId,
+        shopId: shopId,
+        rating: selectedRating.value,
+        comment: comment,
+      );
+
+      Get.back();
+      Get.snackbar(
+        'Ulasan terkirim',
+        'Terima kasih sudah memberikan rating dan ulasan.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
+    } catch (_) {
+      _showError('Ulasan belum tersimpan. Pastikan booking sudah selesai.');
+    } finally {
+      isBusy.value = false;
+    }
+  }
+
+  void _showError(String message) {
     Get.snackbar(
-      'Ulasan terkirim',
-      'Terima kasih sudah memberikan rating dan ulasan.',
+      'Ulasan gagal',
+      message,
       snackPosition: SnackPosition.BOTTOM,
       margin: const EdgeInsets.all(16),
+      backgroundColor: const Color(0xFFFFF1F2),
+      colorText: const Color(0xFF9F1239),
     );
   }
 
   void _readArguments() {
     final arguments = Get.arguments;
-    if (arguments is! Map) {
-      return;
-    }
+    if (arguments is! Map) return;
 
+    if (arguments['bookingId'] is String) {
+      bookingId = arguments['bookingId'] as String;
+    }
+    if (arguments['shopId'] is String) {
+      shopId = arguments['shopId'] as String;
+    }
     if (arguments['shopName'] is String) {
       shopName = arguments['shopName'] as String;
     }

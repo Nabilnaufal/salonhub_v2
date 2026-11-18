@@ -7,11 +7,13 @@ class InvoiceBookingSummary extends StatelessWidget {
     required this.bookingDate,
     required this.bookingCode,
     required this.serviceName,
+    this.shopName = 'Barbershop',
   });
 
   final String bookingDate;
   final String bookingCode;
   final String serviceName;
+  final String shopName;
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +25,7 @@ class InvoiceBookingSummary extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                'Masterpiece Barbershop - Haircut styling',
+                shopName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.headline5.copyWith(

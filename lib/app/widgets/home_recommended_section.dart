@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
 import 'package:salonhub_v2/app/models/barber.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 
 class HomeRecommendedSection extends StatefulWidget {
   const HomeRecommendedSection({
@@ -13,7 +14,7 @@ class HomeRecommendedSection extends StatefulWidget {
 
   final List<Barber> barbers;
   final VoidCallback? onSeeAll;
-  final VoidCallback? onBarberTap;
+  final ValueChanged<Barber>? onBarberTap;
 
   @override
   State<HomeRecommendedSection> createState() => _HomeRecommendedSectionState();
@@ -64,7 +65,9 @@ class _HomeRecommendedSectionState extends State<HomeRecommendedSection> {
             itemBuilder: (context, index) {
               return _FeaturedBarberCard(
                 barber: widget.barbers[index],
-                onTap: widget.onBarberTap,
+                onTap: widget.onBarberTap == null
+                    ? null
+                    : () => widget.onBarberTap!(widget.barbers[index]),
               );
             },
           ),
@@ -75,8 +78,12 @@ class _HomeRecommendedSectionState extends State<HomeRecommendedSection> {
         ...widget.barbers
             .skip(1)
             .map(
-              (barber) =>
-                  _RecommendedBarberItem(barber, onTap: widget.onBarberTap),
+              (barber) => _RecommendedBarberItem(
+                barber,
+                onTap: widget.onBarberTap == null
+                    ? null
+                    : () => widget.onBarberTap!(barber),
+              ),
             ),
         const SizedBox(height: 2),
         Center(
@@ -158,7 +165,7 @@ class _FeaturedBarberCard extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   Container(color: AppColors.blueGray100),
-                  Image.asset(barber.image, fit: BoxFit.cover),
+                  AppPhoto(barber.image, fit: BoxFit.cover),
                   Positioned(
                     right: 0,
                     bottom: 0,
@@ -205,10 +212,7 @@ class _FeaturedBarberCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          _InfoRow(
-            icon: Icons.location_on,
-            text: '${barber.description} (${barber.distance})',
-          ),
+          _InfoRow(icon: Icons.location_on, text: barber.locationLabel),
           const SizedBox(height: 3),
           _InfoRow(iconAsset: 'lib/assets/icons/Star.svg', text: barber.rating),
         ],
@@ -235,7 +239,7 @@ class _RecommendedBarberItem extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
+              child: AppPhoto(
                 barber.image,
                 width: 92,
                 height: 92,
@@ -257,10 +261,7 @@ class _RecommendedBarberItem extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 5),
-                  _InfoRow(
-                    icon: Icons.location_on,
-                    text: '${barber.description} (${barber.distance})',
-                  ),
+                  _InfoRow(icon: Icons.location_on, text: barber.locationLabel),
                   const SizedBox(height: 4),
                   _InfoRow(
                     iconAsset: 'lib/assets/icons/Star.svg',

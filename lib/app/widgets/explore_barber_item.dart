@@ -3,6 +3,7 @@ import 'package:salonhub_v2/app/constant/theme.dart';
 import 'package:salonhub_v2/app/models/barber.dart';
 
 import 'explore_info_row.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 
 class ExploreBarberItem extends StatelessWidget {
   const ExploreBarberItem(this.barber, {super.key, this.onTap});
@@ -22,7 +23,7 @@ class ExploreBarberItem extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(7),
-              child: Image.asset(
+              child: AppPhoto(
                 barber.image,
                 width: 60,
                 height: 60,
@@ -46,7 +47,7 @@ class ExploreBarberItem extends StatelessWidget {
                   const SizedBox(height: 3),
                   ExploreInfoRow(
                     iconAsset: 'lib/assets/icons/Map Point.svg',
-                    text: '${barber.description} (${barber.distance})',
+                    text: barber.locationLabel,
                   ),
                   const SizedBox(height: 2),
                   ExploreInfoRow(

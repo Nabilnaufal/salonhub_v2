@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 
 import '../controllers/account_controller.dart';
 
@@ -35,10 +36,13 @@ class AccountView extends GetView<AccountController> {
                       children: [
                         _buildAvatar(),
                         const SizedBox(height: 10),
-                        Text(
-                          'Naufal Nabil',
-                          style: AppTextStyles.headline3.copyWith(
-                            color: AppColors.primary900,
+                        Obx(
+                          () => Text(
+                            controller.auth.profile.value?.fullName ??
+                                'Pengguna',
+                            style: AppTextStyles.headline3.copyWith(
+                              color: AppColors.primary900,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 18),
@@ -52,25 +56,14 @@ class AccountView extends GetView<AccountController> {
                           controller: controller.emailController,
                           prefixIcon: Icons.email_rounded,
                           keyboardType: TextInputType.emailAddress,
+                          readOnly: true,
                         ),
                         const SizedBox(height: 14),
-                        Obx(
-                          () => _buildField(
-                            label: 'Kata sandi',
-                            controller: controller.passwordController,
-                            prefixAsset: 'Key Minimalistic.svg',
-                            obscureText: controller.isPasswordObscured.value,
-                            suffixIcon: IconButton(
-                              onPressed: controller.togglePasswordVisibility,
-                              icon: Icon(
-                                controller.isPasswordObscured.value
-                                    ? Icons.visibility_off_outlined
-                                    : Icons.visibility_outlined,
-                                color: AppColors.blueGray300,
-                                size: 20,
-                              ),
-                            ),
-                          ),
+                        _buildField(
+                          label: 'Nomor handphone',
+                          controller: controller.phoneController,
+                          prefixIcon: Icons.phone_outlined,
+                          keyboardType: TextInputType.phone,
                         ),
                       ],
                     ),
@@ -113,16 +106,38 @@ class AccountView extends GetView<AccountController> {
   }
 
   Widget _buildAvatar() {
-    return Container(
-      width: 100,
-      height: 100,
-      padding: const EdgeInsets.all(5),
-      decoration: const BoxDecoration(
-        color: AppColors.blueGray300,
-        shape: BoxShape.circle,
-      ),
-      child: ClipOval(
-        child: Image.asset('${_assetPath}login_picture.png', fit: BoxFit.cover),
+    return GestureDetector(
+      onTap: controller.pickAvatar,
+      child: Container(
+        width: 100,
+        height: 100,
+        padding: const EdgeInsets.all(5),
+        decoration: const BoxDecoration(
+          color: AppColors.blueGray300,
+          shape: BoxShape.circle,
+        ),
+        child: Obx(
+          () => ClipOval(
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                AppPhoto(controller.avatarUrl.value),
+                const Align(
+                  alignment: Alignment.bottomRight,
+                  child: CircleAvatar(
+                    radius: 13,
+                    backgroundColor: AppColors.primary900,
+                    child: Icon(
+                      Icons.photo_camera_outlined,
+                      size: 14,
+                      color: AppColors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -135,6 +150,7 @@ class AccountView extends GetView<AccountController> {
     Widget? suffixIcon,
     TextInputType? keyboardType,
     bool obscureText = false,
+    bool readOnly = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -149,6 +165,7 @@ class AccountView extends GetView<AccountController> {
           child: TextField(
             controller: controller,
             obscureText: obscureText,
+            readOnly: readOnly,
             keyboardType: keyboardType,
             style: AppTextStyles.caption1.copyWith(
               color: AppColors.blueGray900,
@@ -196,16 +213,20 @@ class AccountView extends GetView<AccountController> {
     return SizedBox(
       width: double.infinity,
       height: 54,
-      child: ElevatedButton(
-        onPressed: controller.saveAccount,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary900,
-          foregroundColor: AppColors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-        child: Text(
-          'Simpan',
-          style: AppTextStyles.headline4.copyWith(color: AppColors.white),
+      child: Obx(
+        () => ElevatedButton(
+          onPressed: controller.isBusy.value ? null : controller.saveAccount,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary900,
+            foregroundColor: AppColors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          child: Text(
+            controller.isBusy.value ? 'Menyimpan...' : 'Simpan',
+            style: AppTextStyles.headline4.copyWith(color: AppColors.white),
+          ),
         ),
       ),
     );

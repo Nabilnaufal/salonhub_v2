@@ -3,8 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
+import 'package:salonhub_v2/app/widgets/chat_message_body.dart';
 
 import '../controllers/chat_room_controller.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 
 class ChatRoomView extends GetView<ChatRoomController> {
   const ChatRoomView({super.key});
@@ -165,9 +167,10 @@ class ChatRoomView extends GetView<ChatRoomController> {
             ),
             const SizedBox(height: 5),
           ],
-          Text(
-            message.text,
-            style: AppTextStyles.body3.copyWith(
+          ChatMessageBody(
+            text: message.text,
+            textColor: message.isMine ? AppColors.blueGray900 : AppColors.white,
+            textStyle: AppTextStyles.body3.copyWith(
               color: message.isMine ? AppColors.blueGray900 : AppColors.white,
             ),
           ),
@@ -232,6 +235,18 @@ class ChatRoomView extends GetView<ChatRoomController> {
                 ),
                 child: Row(
                   children: [
+                    InkWell(
+                      onTap: controller.sendPhoto,
+                      borderRadius: BorderRadius.circular(20),
+                      child: const Padding(
+                        padding: EdgeInsets.only(right: 8),
+                        child: Icon(
+                          Icons.attach_file_rounded,
+                          size: 20,
+                          color: AppColors.blueGray500,
+                        ),
+                      ),
+                    ),
                     Expanded(
                       child: TextField(
                         controller: controller.messageController,
@@ -315,7 +330,7 @@ class ChatRoomView extends GetView<ChatRoomController> {
           1,
           0,
         ]),
-        child: Image.asset(
+        child: AppPhoto(
           controller.conversationImage,
           width: size,
           height: size,

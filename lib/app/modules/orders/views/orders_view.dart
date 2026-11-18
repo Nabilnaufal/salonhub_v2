@@ -6,6 +6,7 @@ import 'package:salonhub_v2/app/constant/theme.dart';
 import 'package:salonhub_v2/app/models/barber.dart';
 
 import '../controllers/orders_controller.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 
 class OrdersView extends GetView<OrdersController> {
   const OrdersView({super.key});
@@ -90,6 +91,22 @@ class OrdersView extends GetView<OrdersController> {
 
     final order = controller.currentOrder;
 
+    if (order.id.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildTabSwitcher(),
+          const SizedBox(height: 60),
+          Center(
+            child: Text(
+              'Belum ada pesanan.',
+              style: AppTextStyles.body2.copyWith(color: AppColors.blueGray500),
+            ),
+          ),
+        ],
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -127,7 +144,7 @@ class OrdersView extends GetView<OrdersController> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: Image.asset(
+            child: AppPhoto(
               barber.image,
               width: 92,
               height: 92,
@@ -153,7 +170,7 @@ class OrdersView extends GetView<OrdersController> {
                   const SizedBox(height: 6),
                   _historyInfoRow(
                     icon: 'Map Point.svg',
-                    text: '${barber.description} (${barber.distance})',
+                    text: barber.locationLabel,
                   ),
                   const SizedBox(height: 5),
                   _historyInfoRow(icon: 'Star.svg', text: barber.rating),
@@ -726,7 +743,7 @@ class OrdersView extends GetView<OrdersController> {
     return Row(
       children: [
         ClipOval(
-          child: Image.asset(image, width: 42, height: 42, fit: BoxFit.cover),
+          child: AppPhoto(image, width: 42, height: 42, fit: BoxFit.cover),
         ),
         const SizedBox(width: 9),
         Column(
@@ -759,12 +776,7 @@ class OrdersView extends GetView<OrdersController> {
   }) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
-      child: Image.asset(
-        image,
-        width: width,
-        height: height,
-        fit: BoxFit.cover,
-      ),
+      child: AppPhoto(image, width: width, height: height, fit: BoxFit.cover),
     );
   }
 
@@ -781,7 +793,7 @@ class OrdersView extends GetView<OrdersController> {
       items: [
         _bottomBarItem('Home', 'Home Smile.svg', false),
         _bottomBarItem('Booking', 'Calendar Mark.svg', true),
-          _bottomBarItem('Chat', 'Chat Round Unread.svg', false),
+        _bottomBarItem('Chat', 'Chat Round Unread.svg', false),
         _bottomBarItem('Profile', 'User.svg', false),
       ],
     );

@@ -5,10 +5,13 @@ import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:salonhub_v2/app/models/barber.dart';
 import 'package:salonhub_v2/app/providers/routing_provider.dart';
+import 'package:salonhub_v2/app/routes/app_pages.dart';
+import 'package:salonhub_v2/app/services/catalog_service.dart';
 
 class FindBarberController extends GetxController {
   FindBarberController({required this.routingProvider});
 
+  final catalog = Get.find<CatalogService>();
   final RoutingProvider routingProvider;
   final locationSearchController = TextEditingController();
   final selectedMarker = (-1).obs;
@@ -22,39 +25,9 @@ class FindBarberController extends GetxController {
 
   final currentLocation = const LatLng(-7.7508, 110.3794);
 
-  // Data ini sengaja lokal dulu supaya halaman tetap fokus pada tampilan.
-  // Nanti bisa diganti dengan hasil pencarian lokasi dari backend.
-  final markerPositions = const [
-    LatLng(-7.7489, 110.3778),
-    LatLng(-7.7448, 110.3819),
-    LatLng(-7.7532, 110.3848),
-    LatLng(-7.7583, 110.3782),
-    LatLng(-7.7502, 110.3705),
-  ];
-
-  final nearbyBarbers = const [
-    Barber(
-      name: 'Masterpiece Barbershop',
-      description: 'Jl. Kaliurang',
-      distance: '1 km',
-      rating: '5.0',
-      image: 'lib/assets/barbershop_haircut_2.jpg',
-    ),
-    Barber(
-      name: 'Northside Barber Club',
-      description: 'Jl. Kaliurang',
-      distance: '1,8 km',
-      rating: '4.8',
-      image: 'lib/assets/barbershop_exterior_1.jpg',
-    ),
-    Barber(
-      name: 'Gentlemen House',
-      description: 'Sleman',
-      distance: '2,4 km',
-      rating: '4.7',
-      image: 'lib/assets/barbershop_haircut_1.jpg',
-    ),
-  ];
+  final markerPositions = <LatLng>[].obs;
+  final mapBarbers = <Barber>[].obs;
+  final nearbyBarbers = <Barber>[].obs;
 
   final recentSearches = const [
     (name: 'Alfamart Jakal', address: 'Jl. Kaliurang Km. 9,5, Ngaglik, Sleman'),
@@ -67,6 +40,25 @@ class FindBarberController extends GetxController {
       address: 'Jl. Kaliurang No.10, Ngaglik, Sleman',
     ),
   ];
+
+  @override
+  void onInit() {
+    load();
+    super.onInit();
+  }
+
+  Future<void> load() async {
+    final shops = await catalog.loadShops();
+    nearbyBarbers.assignAll(shops);
+    mapBarbers.assignAll(
+      shops.where(
+        (barber) => barber.latitude != null && barber.longitude != null,
+      ),
+    );
+    markerPositions.assignAll(
+      mapBarbers.map((barber) => LatLng(barber.latitude!, barber.longitude!)),
+    );
+  }
 
   List<({String name, String address})> get filteredRecentSearches {
     final query = locationQuery.value.trim().toLowerCase();
@@ -113,6 +105,10 @@ class FindBarberController extends GetxController {
         isRouting.value = false;
       }
     }
+  }
+
+  void openBarber(Barber barber) {
+    Get.toNamed(Routes.BARBER_DETAIL, arguments: barber);
   }
 
   void openSearch() {

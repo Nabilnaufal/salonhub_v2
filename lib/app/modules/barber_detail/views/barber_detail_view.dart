@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
-import 'package:salonhub_v2/app/routes/app_pages.dart';
 import 'package:salonhub_v2/app/widgets/barber_detail_quick_action.dart';
 import 'package:salonhub_v2/app/widgets/barber_detail_tab.dart';
 import 'package:salonhub_v2/app/widgets/barber_review_item.dart';
@@ -12,6 +11,7 @@ import 'package:salonhub_v2/app/widgets/opening_hour_row.dart';
 import 'package:salonhub_v2/app/widgets/timeline_row.dart';
 
 import '../controllers/barber_detail_controller.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 
 class BarberDetailView extends GetView<BarberDetailController> {
   const BarberDetailView({super.key});
@@ -29,9 +29,13 @@ class BarberDetailView extends GetView<BarberDetailController> {
           children: [
             _buildHeader(),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.only(bottom: 24),
-                child: _buildContent(),
+              child: Obx(
+                () => controller.ready.value
+                    ? SingleChildScrollView(
+                        padding: const EdgeInsets.only(bottom: 24),
+                        child: _buildContent(),
+                      )
+                    : const Center(child: CircularProgressIndicator()),
               ),
             ),
           ],
@@ -98,19 +102,32 @@ class BarberDetailView extends GetView<BarberDetailController> {
         const SizedBox(height: 5),
         _infoRow(icon: 'Star.svg', text: controller.rating),
         const SizedBox(height: 17),
-        const Row(
+        Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             BarberDetailQuickAction(
               icon: 'logos_google-maps.svg',
               label: 'Maps',
+              onTap: controller.openMaps,
             ),
             BarberDetailQuickAction(
               icon: 'Chat Round Unread purple.svg',
               label: 'Chat',
+              onTap: controller.openChat,
             ),
-            BarberDetailQuickAction(icon: 'Share.svg', label: 'Share'),
-            BarberDetailQuickAction(icon: 'Heart.svg', label: 'Favorite'),
+            BarberDetailQuickAction(
+              icon: 'Share.svg',
+              label: 'Share',
+              onTap: controller.shareShop,
+            ),
+            Obx(
+              () => BarberDetailQuickAction(
+                icon: 'Heart.svg',
+                label: 'Favorite',
+                highlighted: controller.isFavorite.value,
+                onTap: controller.toggleFavorite,
+              ),
+            ),
           ],
         ),
       ],
@@ -200,48 +217,61 @@ class BarberDetailView extends GetView<BarberDetailController> {
   }
 
   Widget _buildScheduleTab() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            SvgPicture.asset(
-              '${_iconPath}Calendar Mark.svg',
-              width: 18,
-              height: 18,
-              colorFilter: const ColorFilter.mode(
-                AppColors.primary900,
-                BlendMode.srcIn,
+    return Builder(
+      builder: (context) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              SvgPicture.asset(
+                '${_iconPath}Calendar Mark.svg',
+                width: 18,
+                height: 18,
+                colorFilter: const ColorFilter.mode(
+                  AppColors.primary900,
+                  BlendMode.srcIn,
+                ),
               ),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              controller.scheduleDate,
-              style: AppTextStyles.headline5.copyWith(
-                color: AppColors.blueGray900,
+              const SizedBox(width: 6),
+              Text(
+                controller.scheduleDate,
+                style: AppTextStyles.headline5.copyWith(
+                  color: AppColors.blueGray900,
+                ),
               ),
-            ),
-            const SizedBox(width: 4),
-            const Icon(
-              Icons.keyboard_arrow_down,
-              size: 18,
-              color: AppColors.blueGray900,
-            ),
-          ],
-        ),
-        const SizedBox(height: 13),
-        Text(
-          'Timeline',
-          style: AppTextStyles.body3.copyWith(
-            color: AppColors.blueGray900,
-            fontWeight: FontWeight.w700,
+              const SizedBox(width: 4),
+              InkWell(
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: controller.scheduleDay.value,
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime.now().add(const Duration(days: 30)),
+                  );
+                  if (picked != null) controller.changeScheduleDay(picked);
+                },
+                child: const Icon(
+                  Icons.keyboard_arrow_down,
+                  size: 18,
+                  color: AppColors.blueGray900,
+                ),
+              ),
+            ],
           ),
-        ),
-        const SizedBox(height: 4),
-        ...controller.scheduleTimes.map(
-          (time) => TimelineRow(time: time, booking: _bookingAt(time)),
-        ),
-      ],
+          const SizedBox(height: 13),
+          Text(
+            'Timeline',
+            style: AppTextStyles.body3.copyWith(
+              color: AppColors.blueGray900,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 4),
+          ...controller.scheduleTimes.map(
+            (time) => TimelineRow(time: time, booking: _bookingAt(time)),
+          ),
+        ],
+      ),
     );
   }
 
@@ -276,7 +306,7 @@ class BarberDetailView extends GetView<BarberDetailController> {
       width: double.infinity,
       height: 44,
       child: FilledButton(
-        onPressed: () => Get.toNamed(Routes.BOOK_APPOINTMENT),
+        onPressed: controller.bookNow,
         style: FilledButton.styleFrom(
           backgroundColor: AppColors.primary900,
           foregroundColor: AppColors.white,
@@ -299,7 +329,7 @@ class BarberDetailView extends GetView<BarberDetailController> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Image.asset(controller.shopImage, fit: BoxFit.cover),
+            AppPhoto(controller.shopImage, fit: BoxFit.cover),
             Positioned(
               top: 0,
               right: 0,

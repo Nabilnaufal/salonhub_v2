@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 
 class BarberTeamMember extends StatelessWidget {
   const BarberTeamMember({
@@ -49,7 +50,7 @@ class BarberTeamMember extends StatelessWidget {
                   1,
                   0,
                 ]),
-                child: Image.asset(image, fit: BoxFit.cover),
+                child: AppPhoto(image, fit: BoxFit.cover),
               ),
             ),
           ),

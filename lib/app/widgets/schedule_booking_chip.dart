@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
 import 'package:salonhub_v2/app/modules/barber_detail/controllers/barber_detail_controller.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 
 class ScheduleBookingChip extends StatelessWidget {
   const ScheduleBookingChip({super.key, required this.booking});
@@ -46,7 +47,7 @@ class ScheduleBookingChip extends StatelessWidget {
                   1,
                   0,
                 ]),
-                child: Image.asset(booking.image, fit: BoxFit.cover),
+                child: AppPhoto(booking.image, fit: BoxFit.cover),
               ),
             ),
           ),

@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 import 'package:salonhub_v2/app/widgets/home_barber_card.dart';
 import 'package:salonhub_v2/app/widgets/home_map_card.dart';
 import 'package:salonhub_v2/app/widgets/home_promo_card.dart';
 import 'package:salonhub_v2/app/widgets/home_recommended_section.dart';
 import 'package:salonhub_v2/app/widgets/home_section_header.dart';
-import 'package:salonhub_v2/app/widgets/filter_bottom_sheet.dart';
 import 'package:salonhub_v2/app/routes/app_pages.dart';
 
 import '../controllers/home_controller.dart';
@@ -22,73 +22,75 @@ class HomeView extends GetView<HomeController> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 14),
-              const HomePromoCard(),
-              const SizedBox(height: 14),
-              _buildSearchField(context),
-              const SizedBox(height: 18),
-              const HomeSectionHeader(title: 'Barbershop Terdekat'),
-              const SizedBox(height: 10),
-              ...controller.nearbyBarbers.map(
-                (barber) => HomeBarberCard(
-                  barber: barber,
-                  showBooking: false,
-                  showBorder: false,
-                  onTap: () => Get.toNamed(Routes.BARBER_DETAIL),
-                ),
-              ),
-              Center(
-                child: OutlinedButton(
-                  onPressed: () => Get.toNamed(Routes.FIND_BARBER),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primary900,
-                    side: const BorderSide(
-                      color: AppColors.primary900,
-                      width: 1.5,
-                    ),
-                    minimumSize: const Size(0, 48),
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+          child: Obx(
+            () => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(),
+                const SizedBox(height: 14),
+                const HomePromoCard(),
+                const SizedBox(height: 14),
+                _buildSearchField(context),
+                const SizedBox(height: 18),
+                const HomeSectionHeader(title: 'Barbershop Terdekat'),
+                const SizedBox(height: 10),
+                ...controller.nearbyBarbers.map(
+                  (barber) => HomeBarberCard(
+                    barber: barber,
+                    showBooking: false,
+                    showBorder: false,
+                    onTap: () => controller.openBarber(barber),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Lihat Semua',
-                        style: AppTextStyles.headline4.copyWith(
-                          color: AppColors.primary900,
+                ),
+                Center(
+                  child: OutlinedButton(
+                    onPressed: () => Get.toNamed(Routes.FIND_BARBER),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.primary900,
+                      side: const BorderSide(
+                        color: AppColors.primary900,
+                        width: 1.5,
+                      ),
+                      minimumSize: const Size(0, 48),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Lihat Semua',
+                          style: AppTextStyles.headline4.copyWith(
+                            color: AppColors.primary900,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      SvgPicture.asset(
-                        'lib/assets/icons/Square Arrow Right Up.svg',
-                        width: 24,
-                        height: 24,
-                      ),
-                    ],
+                        const SizedBox(width: 8),
+                        SvgPicture.asset(
+                          'lib/assets/icons/Square Arrow Right Up.svg',
+                          width: 24,
+                          height: 24,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 18),
-              HomeRecommendedSection(
-                barbers: controller.recommendedBarbers,
-                onSeeAll: controller.openRecommendedBarbers,
-                onBarberTap: () => Get.toNamed(Routes.BARBER_DETAIL),
-              ),
-              const SizedBox(height: 6),
-              HomeSectionHeader(
-                title: 'Cari Barber di Sekitar',
-                onSeeAll: () => Get.toNamed(Routes.FIND_BARBER),
-              ),
-              const SizedBox(height: 10),
-              const HomeMapCard(),
-            ],
+                const SizedBox(height: 18),
+                HomeRecommendedSection(
+                  barbers: controller.recommendedBarbers,
+                  onSeeAll: controller.openRecommendedBarbers,
+                  onBarberTap: controller.openBarber,
+                ),
+                const SizedBox(height: 6),
+                HomeSectionHeader(
+                  title: 'Cari Barber di Sekitar',
+                  onSeeAll: () => Get.toNamed(Routes.FIND_BARBER),
+                ),
+                const SizedBox(height: 10),
+                const HomeMapCard(),
+              ],
+            ),
           ),
         ),
       ),
@@ -105,11 +107,7 @@ class HomeView extends GetView<HomeController> {
           items: [
             _bottomBarItem('Home', 'lib/assets/icons/Home Smile.svg', 0),
             _bottomBarItem('Booking', 'lib/assets/icons/Calendar Mark.svg', 1),
-            _bottomBarItem(
-              'Chat',
-              'lib/assets/icons/Chat Round Unread.svg',
-              2,
-            ),
+            _bottomBarItem('Chat', 'lib/assets/icons/Chat Round Unread.svg', 2),
             _bottomBarItem('Profile', 'lib/assets/icons/User.svg', 3),
           ],
         ),
@@ -126,13 +124,13 @@ class HomeView extends GetView<HomeController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Medan',
+              'Salonhub',
               style: AppTextStyles.caption2.copyWith(
                 color: AppColors.coolGray500,
               ),
             ),
             Text(
-              'nabil',
+              controller.userName,
               style: AppTextStyles.subHeadline3.copyWith(
                 color: AppColors.coolGray900,
                 fontWeight: FontWeight.w700,
@@ -141,11 +139,7 @@ class HomeView extends GetView<HomeController> {
           ],
         ),
         const Spacer(),
-        CircleAvatar(
-          radius: 19,
-          backgroundColor: AppColors.primary100,
-          backgroundImage: const AssetImage('lib/assets/login_picture.png'),
-        ),
+        ClipOval(child: AppPhoto(controller.avatarUrl, width: 38, height: 38)),
       ],
     );
   }
@@ -157,6 +151,10 @@ class HomeView extends GetView<HomeController> {
           child: SizedBox(
             height: 42,
             child: TextField(
+              controller: controller.searchController,
+              onChanged: controller.changeSearch,
+              onTap: controller.openExplore,
+              readOnly: true,
               decoration: InputDecoration(
                 hintText: 'Cari barbershop atau layanan cukur...',
                 hintStyle: AppTextStyles.caption1.copyWith(
@@ -187,7 +185,7 @@ class HomeView extends GetView<HomeController> {
         ),
         const SizedBox(width: 10),
         InkWell(
-          onTap: () => FilterBottomSheet.show(context),
+          onTap: () => controller.openFilter(context),
           borderRadius: BorderRadius.circular(8),
           child: Container(
             width: 42,

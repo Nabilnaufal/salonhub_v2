@@ -4,6 +4,7 @@ import 'package:salonhub_v2/app/constant/theme.dart';
 import 'package:salonhub_v2/app/models/barber.dart';
 
 import 'explore_info_row.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 
 class FeaturedBarber extends StatelessWidget {
   const FeaturedBarber({super.key, required this.barber, this.onTap});
@@ -28,7 +29,7 @@ class FeaturedBarber extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   Container(color: AppColors.blueGray100),
-                  Image.asset(barber.image, fit: BoxFit.cover),
+                  AppPhoto(barber.image, fit: BoxFit.cover),
                   Positioned(
                     right: 0,
                     bottom: 0,
@@ -81,7 +82,7 @@ class FeaturedBarber extends StatelessWidget {
           const SizedBox(height: 4),
           ExploreInfoRow(
             iconAsset: 'lib/assets/icons/Map Point.svg',
-            text: '${barber.description} (${barber.distance})',
+            text: barber.locationLabel,
           ),
           const SizedBox(height: 3),
           ExploreInfoRow(

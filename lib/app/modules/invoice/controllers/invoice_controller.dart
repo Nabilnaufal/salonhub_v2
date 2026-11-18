@@ -9,6 +9,7 @@ class InvoiceController extends GetxController {
   int totalPrice = 45000;
   String bookingCode = 'SBH-260115-0800';
   String paymentMethodName = 'QRIS';
+  String shopName = 'Barbershop';
   bool isDownloading = false;
 
   final ReceiptDownloadService _receiptDownloadService =
@@ -54,6 +55,7 @@ class InvoiceController extends GetxController {
           servicePrice: servicePrice,
           serviceFeePrice: serviceFeePrice,
           totalPrice: totalPrice,
+          shopName: shopName,
         ),
       );
       Get.snackbar(

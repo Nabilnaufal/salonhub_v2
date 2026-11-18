@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
 import 'package:salonhub_v2/app/models/barber.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 
 class HomeBarberCard extends StatelessWidget {
   const HomeBarberCard({
@@ -32,7 +33,7 @@ class HomeBarberCard extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Image.asset(
+                child: AppPhoto(
                   barber.image,
                   width: 160,
                   height: 82,
@@ -74,7 +75,7 @@ class HomeBarberCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
+              child: AppPhoto(
                 barber.image,
                 width: 92,
                 height: 92,

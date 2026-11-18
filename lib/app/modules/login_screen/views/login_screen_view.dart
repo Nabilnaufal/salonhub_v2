@@ -85,10 +85,11 @@ class LoginScreenView extends GetView<LoginScreenController> {
                       ),
                     ),
                     const SizedBox(height: 22),
-                    const AppTextField(
+                    AppTextField(
                       label: 'Username',
                       hintText: 'nabil@gmail.com',
                       iconPath: 'lib/assets/icons/Vector.svg',
+                      controller: controller.emailController,
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
                     ),
@@ -98,6 +99,7 @@ class LoginScreenView extends GetView<LoginScreenController> {
                         label: 'Password',
                         hintText: '********',
                         iconPath: 'lib/assets/icons/Key Minimalistic.svg',
+                        controller: controller.passwordController,
                         obscureText: controller.isPasswordObscured.value,
                         textInputAction: TextInputAction.done,
                         suffixIcon: IconButton(

@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
 
 import '../controllers/rating_review_controller.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 
 class RatingReviewView extends GetView<RatingReviewController> {
   const RatingReviewView({super.key});
@@ -88,7 +89,7 @@ class RatingReviewView extends GetView<RatingReviewController> {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(8),
-          child: Image.asset(
+          child: AppPhoto(
             controller.shopImage,
             width: 76,
             height: 76,
