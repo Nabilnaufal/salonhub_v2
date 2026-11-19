@@ -83,8 +83,9 @@ class MitraDashboardController extends GetxController {
     Get.toNamed(Routes.MITRA_SHOP_PROFILE);
   }
 
-  void openChat() {
-    Get.toNamed(Routes.MITRA_CHAT);
+  Future<void> openChat() async {
+    await Get.toNamed(Routes.MITRA_CHAT);
+    await data.loadUnreadChats();
   }
 
   void openNotifications() {

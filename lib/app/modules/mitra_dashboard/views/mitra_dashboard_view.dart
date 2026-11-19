@@ -173,7 +173,7 @@ class MitraDashboardView extends GetView<MitraDashboardController> {
         _headerIcon(
           iconPath: 'Chat Round Unread.svg',
           onTap: controller.openChat,
-          badge: 3,
+          badge: controller.data.unreadChats.value,
         ),
         const SizedBox(width: 8),
         _headerIcon(

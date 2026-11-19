@@ -56,6 +56,7 @@ class MitraDataService extends GetxService {
   final services = <MitraService>[].obs;
   final team = <MitraTeamMember>[].obs;
   final reviews = <MitraReview>[].obs;
+  final unreadChats = 0.obs;
 
   String? _shopId;
   String? get shopId => _shopId;
@@ -153,8 +154,21 @@ class MitraDataService extends GetxService {
           .map((e) => Map<String, dynamic>.from(e as Map))
           .toList();
       orders.assignAll(await _attachCustomerProfiles(bookingRows));
+      await loadUnreadChats();
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<void> loadUnreadChats() async {
+    try {
+      final rows = await _client.rpc('unread_counts') as List;
+      unreadChats.value = rows.fold<int>(
+        0,
+        (sum, row) => sum + ((row as Map)['unread'] as num).toInt(),
+      );
+    } catch (_) {
+      // Biarkan angka sebelumnya bila gagal dimuat.
     }
   }
 
