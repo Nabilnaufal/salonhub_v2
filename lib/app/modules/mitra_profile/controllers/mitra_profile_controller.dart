@@ -63,9 +63,13 @@ class MitraProfileController extends GetxController {
       ),
     );
 
-    if (confirmed == true) {
+    if (confirmed != true) return;
+
+    try {
       await auth.signOut();
-      Get.offAllNamed(Routes.MITRA_LOGIN);
+    } catch (_) {
+      // Sesi lokal tetap dihapus walau panggilan server gagal.
     }
+    Get.offAllNamed(Routes.MITRA_LOGIN);
   }
 }

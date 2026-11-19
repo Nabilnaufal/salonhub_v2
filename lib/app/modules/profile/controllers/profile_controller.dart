@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'package:salonhub_v2/app/routes/app_pages.dart';
@@ -45,7 +46,30 @@ class ProfileController extends GetxController {
   }
 
   Future<void> logout() async {
-    await auth.signOut();
+    final confirmed = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('Keluar dari akun?'),
+        content: const Text('Kamu dapat masuk kembali kapan saja.'),
+        actions: [
+          TextButton(onPressed: Get.back, child: const Text('Batal')),
+          FilledButton(
+            onPressed: () => Get.back(result: true),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFE11D48),
+            ),
+            child: const Text('Keluar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await auth.signOut();
+    } catch (_) {
+      // Sesi lokal tetap dihapus walau panggilan server gagal.
+    }
     Get.offAllNamed(Routes.LOGIN_SCREEN);
   }
 
