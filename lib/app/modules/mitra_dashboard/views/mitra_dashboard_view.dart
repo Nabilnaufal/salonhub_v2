@@ -618,10 +618,7 @@ class MitraDashboardView extends GetView<MitraDashboardController> {
         children: [
           Row(
             children: [
-              CircleAvatar(
-                radius: 18,
-                backgroundImage: AssetImage(review.customerImage),
-              ),
+              avatarImage(review.customerImage, radius: 18),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(

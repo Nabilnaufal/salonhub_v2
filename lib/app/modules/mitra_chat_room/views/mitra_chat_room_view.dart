@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
-import 'package:salonhub_v2/app/widgets/chat_message_body.dart';
 import 'package:salonhub_v2/app/modules/mitra_chat_room/controllers/mitra_chat_room_controller.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
+import 'package:salonhub_v2/app/widgets/chat_message_body.dart';
 
 class MitraChatRoomView extends GetView<MitraChatRoomController> {
   const MitraChatRoomView({super.key});
@@ -83,10 +84,7 @@ class MitraChatRoomView extends GetView<MitraChatRoomController> {
           const SizedBox(width: 10),
           Stack(
             children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundImage: AssetImage(controller.conversationImage),
-              ),
+              avatarImage(controller.conversationImage, radius: 20),
               Positioned(
                 right: 1,
                 bottom: 1,

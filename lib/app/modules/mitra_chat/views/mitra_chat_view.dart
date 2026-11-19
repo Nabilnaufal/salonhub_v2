@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
 import 'package:salonhub_v2/app/modules/mitra_chat/controllers/mitra_chat_controller.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 import 'package:salonhub_v2/app/widgets/mitra_empty_state.dart';
 import 'package:salonhub_v2/app/widgets/mitra_page_header.dart';
 
@@ -101,12 +102,7 @@ class MitraChatView extends GetView<MitraChatController> {
                             children: [
                               Stack(
                                 children: [
-                                  CircleAvatar(
-                                    radius: 24,
-                                    backgroundImage: AssetImage(
-                                      conversation.image,
-                                    ),
-                                  ),
+                                  avatarImage(conversation.image, radius: 24),
                                   if (conversation.isOnline)
                                     Positioned(
                                       right: 1,

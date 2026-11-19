@@ -52,3 +52,36 @@ class AppPhoto extends StatelessWidget {
     );
   }
 }
+
+/// Avatar bulat dari URL Supabase; kosong/gagal dimuat jadi ikon orang.
+Widget avatarImage(String url, {required double radius}) {
+  if (!url.startsWith('http')) {
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: AppColors.primary50,
+      child: Icon(
+        Icons.person_outline,
+        size: radius * .9,
+        color: AppColors.primary900,
+      ),
+    );
+  }
+
+  return ClipOval(
+    child: Image.network(
+      url,
+      width: radius * 2,
+      height: radius * 2,
+      fit: BoxFit.cover,
+      errorBuilder: (_, _, _) => CircleAvatar(
+        radius: radius,
+        backgroundColor: AppColors.primary50,
+        child: Icon(
+          Icons.person_outline,
+          size: radius * .9,
+          color: AppColors.primary900,
+        ),
+      ),
+    ),
+  );
+}

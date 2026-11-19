@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
 import 'package:salonhub_v2/app/models/mitra.dart';
 import 'package:salonhub_v2/app/modules/mitra_order_detail/controllers/mitra_order_detail_controller.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 import 'package:salonhub_v2/app/widgets/app_primary_button.dart';
 import 'package:salonhub_v2/app/widgets/mitra_page_header.dart';
 import 'package:salonhub_v2/app/widgets/mitra_status_chip.dart';
@@ -265,10 +266,7 @@ class MitraOrderDetailView extends GetView<MitraOrderDetailController> {
           const SizedBox(height: 12),
           Row(
             children: [
-              CircleAvatar(
-                radius: 22,
-                backgroundImage: AssetImage(order.customerImage),
-              ),
+              avatarImage(order.customerImage, radius: 22),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
@@ -367,10 +365,7 @@ class MitraOrderDetailView extends GetView<MitraOrderDetailController> {
           const SizedBox(height: 12),
           Row(
             children: [
-              CircleAvatar(
-                radius: 16,
-                backgroundImage: AssetImage(order.barberImage),
-              ),
+              avatarImage(order.barberImage, radius: 16),
               const SizedBox(width: 9),
               Expanded(
                 child: Text(

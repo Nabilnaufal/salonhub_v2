@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
 import 'package:salonhub_v2/app/models/mitra.dart';
 import 'package:salonhub_v2/app/modules/mitra_reviews/controllers/mitra_reviews_controller.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 import 'package:salonhub_v2/app/widgets/mitra_empty_state.dart';
 import 'package:salonhub_v2/app/widgets/mitra_page_header.dart';
 
@@ -243,10 +244,7 @@ class MitraReviewsView extends GetView<MitraReviewsController> {
         children: [
           Row(
             children: [
-              CircleAvatar(
-                radius: 19,
-                backgroundImage: AssetImage(review.customerImage),
-              ),
+              avatarImage(review.customerImage, radius: 19),
               const SizedBox(width: 9),
               Expanded(
                 child: Column(

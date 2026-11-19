@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
 import 'package:salonhub_v2/app/models/mitra.dart';
 import 'package:salonhub_v2/app/modules/mitra_team/controllers/mitra_team_controller.dart';
+import 'package:salonhub_v2/app/widgets/app_photo.dart';
 import 'package:salonhub_v2/app/widgets/mitra_empty_state.dart';
 import 'package:salonhub_v2/app/widgets/mitra_page_header.dart';
 
@@ -192,10 +193,23 @@ class MitraTeamView extends GetView<MitraTeamController> {
             children: [
               Stack(
                 children: [
-                  CircleAvatar(
-                    radius: 26,
-                    backgroundImage: AssetImage(member.image),
-                  ),
+                  member.image.isEmpty
+                      ? const CircleAvatar(
+                          radius: 26,
+                          backgroundColor: AppColors.primary50,
+                          child: Icon(
+                            Icons.person_outline,
+                            color: AppColors.primary900,
+                          ),
+                        )
+                      : ClipOval(
+                          child: AppPhoto(
+                            member.image,
+                            width: 52,
+                            height: 52,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                   Positioned(
                     right: 0,
                     bottom: 0,
