@@ -25,6 +25,7 @@ void showAppSnack(
     title,
     message,
     snackPosition: SnackPosition.TOP,
+    margin: const EdgeInsets.all(16),
     backgroundColor: AppColors.white,
     colorText: AppColors.coolGray900,
     borderRadius: 12,
