@@ -12,6 +12,7 @@ abstract class Routes {
   static const LOGIN_SCREEN = _Paths.LOGIN_SCREEN;
   static const FORGOT_PASSWORD = _Paths.FORGOT_PASSWORD;
   static const OTP_SCREEN = _Paths.OTP_SCREEN;
+  static const RESET_PASSWORD = _Paths.RESET_PASSWORD;
   static const REGISTER_SCREEN = _Paths.REGISTER_SCREEN;
   static const EXPLORE_BARBERS = _Paths.EXPLORE_BARBERS;
   static const FIND_BARBER = _Paths.FIND_BARBER;
@@ -57,6 +58,7 @@ abstract class _Paths {
   static const LOGIN_SCREEN = '/login-screen';
   static const FORGOT_PASSWORD = '/forgot-password';
   static const OTP_SCREEN = '/otp-screen';
+  static const RESET_PASSWORD = '/reset-password';
   static const REGISTER_SCREEN = '/register-screen';
   static const EXPLORE_BARBERS = '/explore-barbers';
   static const FIND_BARBER = '/find-barber';

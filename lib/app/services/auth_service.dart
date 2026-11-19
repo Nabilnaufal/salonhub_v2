@@ -118,6 +118,21 @@ class AuthService extends GetxService {
     await _client.auth.resend(email: email, type: OtpType.signup);
   }
 
+  Future<void> verifyRecoveryOtp({
+    required String email,
+    required String token,
+  }) async {
+    await _client.auth.verifyOTP(
+      email: email,
+      token: token,
+      type: OtpType.recovery,
+    );
+  }
+
+  Future<void> updatePassword(String password) {
+    return _client.auth.updateUser(UserAttributes(password: password));
+  }
+
   Future<void> updateProfile({
     String? fullName,
     String? phone,

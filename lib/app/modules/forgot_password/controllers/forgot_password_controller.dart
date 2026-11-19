@@ -26,11 +26,11 @@ class ForgotPasswordController extends GetxController {
       await auth.resetPassword(email);
       Get.snackbar(
         'Email terkirim',
-        'Cek tautan reset password di $email.',
+        'Cek 6 digit kode yang kami kirim ke $email.',
         snackPosition: SnackPosition.BOTTOM,
         margin: const EdgeInsets.all(16),
       );
-      Get.offNamed(Routes.LOGIN_SCREEN);
+      Get.offNamed(Routes.RESET_PASSWORD, arguments: {'email': email});
     } catch (_) {
       Get.snackbar(
         'Gagal mengirim',

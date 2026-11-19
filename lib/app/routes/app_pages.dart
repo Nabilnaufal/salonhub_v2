@@ -78,6 +78,8 @@ import '../modules/rating_review/bindings/rating_review_binding.dart';
 import '../modules/rating_review/views/rating_review_view.dart';
 import '../modules/register_screen/bindings/register_screen_binding.dart';
 import '../modules/register_screen/views/register_screen_view.dart';
+import '../modules/reset_password/bindings/reset_password_binding.dart';
+import '../modules/reset_password/views/reset_password_view.dart';
 import '../modules/security/bindings/security_binding.dart';
 import '../modules/security/views/security_view.dart';
 import '../modules/splash_scree/bindings/splash_scree_binding.dart';
@@ -137,6 +139,11 @@ class AppPages {
       name: _Paths.OTP_SCREEN,
       page: () => const OtpScreenView(),
       binding: OtpScreenBinding(),
+    ),
+    GetPage(
+      name: _Paths.RESET_PASSWORD,
+      page: () => const ResetPasswordView(),
+      binding: ResetPasswordBinding(),
     ),
     GetPage(
       name: _Paths.REGISTER_SCREEN,
