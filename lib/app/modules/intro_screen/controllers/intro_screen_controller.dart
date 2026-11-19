@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:salonhub_v2/app/constant/prefs.dart';
 import 'package:salonhub_v2/app/routes/app_pages.dart';
 
 class IntroScreenController extends GetxController {
@@ -31,8 +33,10 @@ class IntroScreenController extends GetxController {
     currentPage.value = index;
   }
 
-  void nextPage() {
+  Future<void> nextPage() async {
     if (currentPage.value == pages.length - 1) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(introSeenKey, true);
       Get.offNamed(Routes.LOGIN_SCREEN);
       return;
     }
