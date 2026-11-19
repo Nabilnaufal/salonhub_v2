@@ -269,6 +269,8 @@ class MitraEarningsView extends GetView<MitraEarningsController> {
   Widget _buildChartCard() {
     final values = controller.weeklyRevenue;
     final maxValue = values.reduce((a, b) => a > b ? a : b);
+    // Tanpa guard, semua nilai 0 membuat tinggi bar jadi NaN.
+    final scaleMax = maxValue <= 0 ? 1 : maxValue;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -313,7 +315,7 @@ class MitraEarningsView extends GetView<MitraEarningsController> {
                           ),
                           const SizedBox(height: 4),
                           Container(
-                            height: 20 + (values[index] / maxValue) * 58,
+                            height: 20 + (values[index] / scaleMax) * 58,
                             decoration: BoxDecoration(
                               color: index == values.length - 1
                                   ? AppColors.primary900

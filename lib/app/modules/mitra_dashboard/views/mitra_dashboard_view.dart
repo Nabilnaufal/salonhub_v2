@@ -344,6 +344,8 @@ class MitraDashboardView extends GetView<MitraDashboardController> {
   Widget _buildRevenueCard() {
     final values = controller.weeklyRevenue;
     final maxValue = values.reduce((a, b) => a > b ? a : b);
+    // Tanpa guard, semua nilai 0 membuat tinggi bar jadi NaN.
+    final scaleMax = maxValue <= 0 ? 1 : maxValue;
     final total = values.fold(0, (sum, value) => sum + value);
 
     return Container(
@@ -422,7 +424,7 @@ class MitraDashboardView extends GetView<MitraDashboardController> {
                       children: [
                         Container(
                           width: 20,
-                          height: 18 + (values[index] / maxValue) * 58,
+                          height: 18 + (values[index] / scaleMax) * 58,
                           decoration: BoxDecoration(
                             color: index == values.length - 1
                                 ? AppColors.primary900
