@@ -114,6 +114,8 @@ class MitraShopProfileController extends GetxController {
     );
     if (confirmed != true) return;
 
+    // shortcut: file di storage tidak ikut dihapus, hanya referensinya.
+    // Hapus objeknya juga kalau nanti kuota bucket jadi masalah.
     final gallery = [...shop.gallery]..removeAt(index);
     await data.updateShop(shop.copyWith(gallery: gallery));
   }
