@@ -14,6 +14,7 @@ import 'package:salonhub_v2/app/widgets/location_picker.dart';
 class MitraShopProfileController extends GetxController {
   final data = Get.find<MitraDataService>();
   final auth = Get.find<AuthService>();
+  final isUploading = false.obs;
 
   MitraShop get shop => data.shop.value;
   bool get isShopOpen => data.isShopOpen.value;
@@ -68,11 +69,63 @@ class MitraShopProfileController extends GetxController {
     await data.updateShop(shop.copyWith(image: url));
   }
 
+  Future<void> addGalleryPhoto() async {
+    if (isUploading.value) return;
+
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1600,
+      imageQuality: 80,
+    );
+    if (picked == null) return;
+
+    isUploading.value = true;
+    try {
+      final bytes = await picked.readAsBytes();
+      final url = await auth.uploadPhoto(bytes, folder: 'shops');
+      await data.updateShop(shop.copyWith(gallery: [...shop.gallery, url]));
+    } catch (_) {
+      Get.snackbar(
+        'Gagal mengunggah',
+        'Foto galeri belum tersimpan. Coba lagi.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
+    } finally {
+      isUploading.value = false;
+    }
+  }
+
+  Future<void> removeGalleryPhoto(int index) async {
+    if (index < 0 || index >= shop.gallery.length) return;
+
+    final confirmed = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('Hapus foto?'),
+        content: const Text('Foto ini akan dihapus dari galeri toko.'),
+        actions: [
+          TextButton(onPressed: Get.back, child: const Text('Batal')),
+          FilledButton(
+            onPressed: () => Get.back(result: true),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    final gallery = [...shop.gallery]..removeAt(index);
+    await data.updateShop(shop.copyWith(gallery: gallery));
+  }
+
   Future<void> editProfile() async {
     final nameController = TextEditingController(text: shop.name);
     final descriptionController = TextEditingController(text: shop.description);
     final addressController = TextEditingController(text: shop.address);
     final phoneController = TextEditingController(text: shop.phone);
+    final facilitiesController = TextEditingController(
+      text: shop.facilities.join(', '),
+    );
     LatLng? picked = (shop.latitude != null && shop.longitude != null)
         ? LatLng(shop.latitude!, shop.longitude!)
         : null;
@@ -105,6 +158,14 @@ class MitraShopProfileController extends GetxController {
                   controller: phoneController,
                   keyboardType: TextInputType.phone,
                   decoration: const InputDecoration(labelText: 'Nomor telepon'),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: facilitiesController,
+                  decoration: const InputDecoration(
+                    labelText: 'Fasilitas',
+                    hintText: 'AC, WiFi, Parkir (pisahkan dengan koma)',
+                  ),
                 ),
                 const SizedBox(height: 10),
                 SizedBox(
@@ -154,6 +215,11 @@ class MitraShopProfileController extends GetxController {
           description: descriptionController.text.trim(),
           address: addressController.text.trim(),
           phone: phoneController.text.trim(),
+          facilities: facilitiesController.text
+              .split(',')
+              .map((item) => item.trim())
+              .where((item) => item.isNotEmpty)
+              .toList(),
           latitude: picked?.latitude ?? shop.latitude,
           longitude: picked?.longitude ?? shop.longitude,
         ),
@@ -170,5 +236,6 @@ class MitraShopProfileController extends GetxController {
     descriptionController.dispose();
     addressController.dispose();
     phoneController.dispose();
+    facilitiesController.dispose();
   }
 }

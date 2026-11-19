@@ -501,6 +501,7 @@ class MitraDataService extends GetxService {
           'phone': updatedShop.phone,
           'image_url': updatedShop.image.isEmpty ? null : updatedShop.image,
           'facilities': updatedShop.facilities,
+          'gallery': updatedShop.gallery,
           'latitude': updatedShop.latitude,
           'longitude': updatedShop.longitude,
         })

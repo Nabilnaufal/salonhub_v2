@@ -565,33 +565,58 @@ class MitraShopProfileView extends GetView<MitraShopProfileController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _cardTitle('Fasilitas'),
+          _cardTitle(
+            'Fasilitas',
+            trailing: TextButton(
+              onPressed: controller.editProfile,
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text(
+                'Ubah',
+                style: AppTextStyles.caption2.copyWith(
+                  color: AppColors.primary900,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
           const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: controller.shop.facilities
-                .map(
-                  (facility) => Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 5,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary50,
-                      borderRadius: BorderRadius.circular(99),
-                    ),
-                    child: Text(
-                      facility,
-                      style: AppTextStyles.caption2.copyWith(
-                        color: AppColors.primary900,
-                        fontWeight: FontWeight.w600,
+          if (controller.shop.facilities.isEmpty)
+            Text(
+              'Belum ada fasilitas. Ketuk "Ubah" untuk menambahkan.',
+              style: AppTextStyles.caption2.copyWith(
+                color: AppColors.coolGray400,
+              ),
+            )
+          else
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: controller.shop.facilities
+                  .map(
+                    (facility) => Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary50,
+                        borderRadius: BorderRadius.circular(99),
+                      ),
+                      child: Text(
+                        facility,
+                        style: AppTextStyles.caption2.copyWith(
+                          color: AppColors.primary900,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  ),
-                )
-                .toList(),
-          ),
+                  )
+                  .toList(),
+            ),
         ],
       ),
     );
@@ -616,17 +641,60 @@ class MitraShopProfileView extends GetView<MitraShopProfileController> {
             height: 84,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
-              itemCount: controller.shop.gallery.length,
+              itemCount: controller.shop.gallery.length + 1,
               separatorBuilder: (_, _) => const SizedBox(width: 8),
-              itemBuilder: (context, index) => ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: AppPhoto(
-                  controller.shop.gallery[index],
-                  width: 110,
-                  height: 84,
-                  fit: BoxFit.cover,
-                ),
-              ),
+              itemBuilder: (context, index) {
+                if (index == controller.shop.gallery.length) {
+                  return Obx(
+                    () => GestureDetector(
+                      onTap: controller.addGalleryPhoto,
+                      child: Container(
+                        width: 84,
+                        height: 84,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary50,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: controller.isUploading.value
+                            ? const Center(
+                                child: SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.primary900,
+                                  ),
+                                ),
+                              )
+                            : const Icon(
+                                Icons.add,
+                                color: AppColors.primary900,
+                              ),
+                      ),
+                    ),
+                  );
+                }
+
+                return GestureDetector(
+                  onLongPress: () => controller.removeGalleryPhoto(index),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: AppPhoto(
+                      controller.shop.gallery[index],
+                      width: 110,
+                      height: 84,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Ketuk + untuk menambah foto. Tahan foto untuk menghapus.',
+            style: AppTextStyles.caption2.copyWith(
+              color: AppColors.coolGray400,
             ),
           ),
         ],
