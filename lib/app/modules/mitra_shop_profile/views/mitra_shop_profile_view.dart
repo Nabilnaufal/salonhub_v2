@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
 import 'package:salonhub_v2/app/modules/mitra_shop_profile/controllers/mitra_shop_profile_controller.dart';
 import 'package:salonhub_v2/app/widgets/mitra_page_header.dart';
@@ -361,6 +363,96 @@ class MitraShopProfileView extends GetView<MitraShopProfileController> {
     );
   }
 
+  Widget _buildLocationPreview() {
+    final lat = controller.shop.latitude;
+    final lng = controller.shop.longitude;
+
+    if (lat == null || lng == null) {
+      return Container(
+        height: 110,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: AppColors.blueGray100,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Center(
+          child: Text(
+            'Lokasi belum diatur',
+            style: AppTextStyles.caption1.copyWith(
+              color: AppColors.coolGray500,
+            ),
+          ),
+        ),
+      );
+    }
+
+    final point = LatLng(lat, lng);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: SizedBox(
+        height: 110,
+        width: double.infinity,
+        child: Stack(
+          children: [
+            GestureDetector(
+              onTap: controller.openMap,
+              child: FlutterMap(
+                options: MapOptions(
+                  initialCenter: point,
+                  initialZoom: 15.5,
+                  interactionOptions: const InteractionOptions(
+                    flags: InteractiveFlag.none,
+                  ),
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate:
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.salonhub.salonhub_v2',
+                  ),
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: point,
+                        width: 34,
+                        height: 34,
+                        alignment: Alignment.topCenter,
+                        child: SvgPicture.asset(
+                          'lib/assets/icons/Map Point.svg',
+                          width: 34,
+                          height: 34,
+                          colorFilter: const ColorFilter.mode(
+                            AppColors.primary900,
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              right: 4,
+              bottom: 2,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                color: AppColors.white.withValues(alpha: .75),
+                child: Text(
+                  '© OpenStreetMap',
+                  style: AppTextStyles.caption2.copyWith(
+                    fontSize: 8,
+                    color: AppColors.coolGray600,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildLocationCard() {
     return _card(
       child: Column(
@@ -368,30 +460,7 @@ class MitraShopProfileView extends GetView<MitraShopProfileController> {
         children: [
           _cardTitle('Lokasi'),
           const SizedBox(height: 10),
-          Container(
-            height: 110,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: AppColors.blueGray100,
-              borderRadius: BorderRadius.circular(12),
-              image: const DecorationImage(
-                image: AssetImage('lib/assets/background2.png'),
-                fit: BoxFit.cover,
-                opacity: .35,
-              ),
-            ),
-            child: Center(
-              child: SvgPicture.asset(
-                'lib/assets/icons/Map Point.svg',
-                width: 34,
-                height: 34,
-                colorFilter: const ColorFilter.mode(
-                  AppColors.primary900,
-                  BlendMode.srcIn,
-                ),
-              ),
-            ),
-          ),
+          _buildLocationPreview(),
           const SizedBox(height: 10),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
