@@ -50,8 +50,9 @@ class MitraSettingsController extends GetxController {
       );
     } catch (_) {
       showAppSnack(
-        'Pengaturan notifikasi',
-        'Perubahan belum tersimpan. Coba lagi.',
+        'Gagal menyimpan',
+        'Pengaturan notifikasi belum tersimpan. Coba lagi.',
+        type: AppSnackType.error,
       );
     }
   }

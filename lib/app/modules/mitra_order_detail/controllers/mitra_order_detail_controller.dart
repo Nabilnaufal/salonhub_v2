@@ -93,8 +93,8 @@ class MitraOrderDetailController extends GetxController {
       await callNumber(phone);
     } catch (_) {
       showAppSnack(
-        'Telepon',
-        'Tidak bisa membuka aplikasi telepon.',
+        'Gagal menelepon',
+        'Aplikasi telepon tidak dapat dibuka.',
         type: AppSnackType.error,
       );
     }

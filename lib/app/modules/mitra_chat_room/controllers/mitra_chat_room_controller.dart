@@ -143,8 +143,8 @@ class MitraChatRoomController extends GetxController {
       await callNumber(customerPhone);
     } catch (_) {
       showAppSnack(
-        'Telepon',
-        'Tidak bisa membuka aplikasi telepon.',
+        'Gagal menelepon',
+        'Aplikasi telepon tidak dapat dibuka.',
         type: AppSnackType.error,
       );
     }
