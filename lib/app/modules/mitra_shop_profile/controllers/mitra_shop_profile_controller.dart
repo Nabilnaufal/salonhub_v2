@@ -3,11 +3,13 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:salonhub_v2/app/data/mitra_data_service.dart';
 import 'package:salonhub_v2/app/routes/app_pages.dart';
 import 'package:salonhub_v2/app/models/mitra.dart';
 import 'package:salonhub_v2/app/services/auth_service.dart';
 import 'package:salonhub_v2/app/services/external_actions.dart';
+import 'package:salonhub_v2/app/widgets/location_picker.dart';
 
 class MitraShopProfileController extends GetxController {
   final data = Get.find<MitraDataService>();
@@ -71,73 +73,68 @@ class MitraShopProfileController extends GetxController {
     final descriptionController = TextEditingController(text: shop.description);
     final addressController = TextEditingController(text: shop.address);
     final phoneController = TextEditingController(text: shop.phone);
-    final latitudeController = TextEditingController(
-      text: shop.latitude?.toString() ?? '',
-    );
-    final longitudeController = TextEditingController(
-      text: shop.longitude?.toString() ?? '',
-    );
+    LatLng? picked = (shop.latitude != null && shop.longitude != null)
+        ? LatLng(shop.latitude!, shop.longitude!)
+        : null;
 
     final result = await Get.dialog<bool>(
       AlertDialog(
         title: const Text('Edit profil toko'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Nama toko'),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: descriptionController,
-                maxLines: 3,
-                decoration: const InputDecoration(labelText: 'Deskripsi'),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: addressController,
-                decoration: const InputDecoration(labelText: 'Alamat'),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: phoneController,
-                keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(labelText: 'Nomor telepon'),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: latitudeController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                        signed: true,
-                      ),
-                      decoration: const InputDecoration(labelText: 'Latitude'),
+        content: StatefulBuilder(
+          builder: (context, setState) => SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(labelText: 'Nama toko'),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: descriptionController,
+                  maxLines: 3,
+                  decoration: const InputDecoration(labelText: 'Deskripsi'),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: addressController,
+                  decoration: const InputDecoration(labelText: 'Alamat'),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: phoneController,
+                  keyboardType: TextInputType.phone,
+                  decoration: const InputDecoration(labelText: 'Nomor telepon'),
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      final location = await showLocationPicker(
+                        context,
+                        initial: picked,
+                      );
+                      if (location != null) {
+                        setState(() => picked = location);
+                      }
+                    },
+                    icon: const Icon(Icons.map_outlined, size: 18),
+                    label: Text(
+                      picked == null
+                          ? 'Pilih lokasi di peta'
+                          : '${picked!.latitude.toStringAsFixed(6)}, '
+                                '${picked!.longitude.toStringAsFixed(6)}',
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: TextField(
-                      controller: longitudeController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                        signed: true,
-                      ),
-                      decoration: const InputDecoration(labelText: 'Longitude'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'Koordinat dipakai tombol Maps customer & mitra.',
-                style: TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
-              ),
-            ],
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Lokasi dipakai tombol Maps customer & mitra.',
+                  style: TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
+                ),
+              ],
+            ),
           ),
         ),
         actions: [
@@ -157,11 +154,8 @@ class MitraShopProfileController extends GetxController {
           description: descriptionController.text.trim(),
           address: addressController.text.trim(),
           phone: phoneController.text.trim(),
-          latitude:
-              double.tryParse(latitudeController.text.trim()) ?? shop.latitude,
-          longitude:
-              double.tryParse(longitudeController.text.trim()) ??
-              shop.longitude,
+          latitude: picked?.latitude ?? shop.latitude,
+          longitude: picked?.longitude ?? shop.longitude,
         ),
       );
       Get.snackbar(
@@ -176,7 +170,5 @@ class MitraShopProfileController extends GetxController {
     descriptionController.dispose();
     addressController.dispose();
     phoneController.dispose();
-    latitudeController.dispose();
-    longitudeController.dispose();
   }
 }
