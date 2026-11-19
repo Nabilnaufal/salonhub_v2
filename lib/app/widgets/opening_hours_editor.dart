@@ -27,6 +27,17 @@ String _timeValue(TimeOfDay time) =>
     '${time.hour.toString().padLeft(2, '0')}:'
     '${time.minute.toString().padLeft(2, '0')}:00';
 
+Widget _timeButton({required String text, required VoidCallback? onPressed}) {
+  return TextButton(
+    onPressed: onPressed,
+    style: TextButton.styleFrom(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      minimumSize: const Size(0, 40),
+    ),
+    child: Text(text, style: const TextStyle(fontSize: 12)),
+  );
+}
+
 /// Editor jam operasional 7 hari; menyimpan ke `shop_opening_hours`.
 Future<void> showOpeningHoursEditor(
   BuildContext context,
@@ -107,24 +118,18 @@ Future<void> showOpeningHoursEditor(
                   Expanded(
                     child: Row(
                       children: [
-                        TextButton(
+                        _timeButton(
+                          text: draft.isClosed ? '-' : _timeText(draft.open),
                           onPressed: draft.isClosed
                               ? null
                               : () => pickTime(isOpen: true),
-                          child: Text(
-                            draft.isClosed ? '-' : _timeText(draft.open),
-                            style: const TextStyle(fontSize: 12),
-                          ),
                         ),
                         const Text('–', style: TextStyle(fontSize: 12)),
-                        TextButton(
+                        _timeButton(
+                          text: draft.isClosed ? '-' : _timeText(draft.close),
                           onPressed: draft.isClosed
                               ? null
                               : () => pickTime(isOpen: false),
-                          child: Text(
-                            draft.isClosed ? '-' : _timeText(draft.close),
-                            style: const TextStyle(fontSize: 12),
-                          ),
                         ),
                       ],
                     ),
