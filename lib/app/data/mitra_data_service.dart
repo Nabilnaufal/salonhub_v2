@@ -253,14 +253,44 @@ class MitraDataService extends GetxService {
       )
       .length;
 
-  int get todayRevenue => orders
-      .where(
-        (order) =>
-            order.dateLabel.toLowerCase().contains('hari ini') &&
-            order.isPaid &&
-            order.status != MitraOrderStatus.dibatalkan,
-      )
-      .fold(0, (total, order) => total + order.totalPrice);
+  int _revenueOn(DateTime day) {
+    final start = DateTime(day.year, day.month, day.day);
+    final end = start.add(const Duration(days: 1));
+    return orders
+        .where((order) {
+          final at = order.scheduledAt;
+          return at != null &&
+              !at.isBefore(start) &&
+              at.isBefore(end) &&
+              order.isPaid &&
+              order.status != MitraOrderStatus.dibatalkan;
+        })
+        .fold(0, (total, order) => total + order.totalPrice);
+  }
+
+  int get todayRevenue => _revenueOn(DateTime.now());
+
+  int get yesterdayRevenue =>
+      _revenueOn(DateTime.now().subtract(const Duration(days: 1)));
+
+  /// null bila belum ada pembanding (kemarin nol).
+  int? get todayRevenueChangePercent {
+    final previous = yesterdayRevenue;
+    if (previous == 0) return null;
+    return ((todayRevenue - previous) * 100 / previous).round();
+  }
+
+  int get newOrdersTodayCount {
+    final now = DateTime.now();
+    return orders.where((order) {
+      final at = order.scheduledAt;
+      return at != null &&
+          at.year == now.year &&
+          at.month == now.month &&
+          at.day == now.day &&
+          order.status == MitraOrderStatus.baru;
+    }).length;
+  }
 
   double get averageRating {
     if (reviews.isEmpty) return 0;

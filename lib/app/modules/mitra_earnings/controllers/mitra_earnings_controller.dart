@@ -117,7 +117,25 @@ class MitraEarningsController extends GetxController {
     }
   }
 
-  double get growthPercent => 0;
+  /// null bila minggu sebelumnya belum ada pendapatan.
+  double? get growthPercent {
+    final now = DateTime.now();
+    final end = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(const Duration(days: 6));
+    final start = end.subtract(const Duration(days: 7));
+    final previous = _paidOrders
+        .where((order) {
+          final at = order.scheduledAt;
+          return at != null && !at.isBefore(start) && at.isBefore(end);
+        })
+        .fold(0, (total, order) => total + order.totalPrice);
+    if (previous == 0) return null;
+    final current = weeklyRevenue.fold(0, (sum, value) => sum + value);
+    return (current - previous) * 100 / previous;
+  }
 
   String get periodLabel {
     switch (selectedPeriod.value) {

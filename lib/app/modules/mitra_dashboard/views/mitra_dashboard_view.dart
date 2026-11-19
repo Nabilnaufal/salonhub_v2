@@ -40,7 +40,8 @@ class MitraDashboardView extends GetView<MitraDashboardController> {
                       iconPath: 'lib/assets/icons/Wallet Money.svg',
                       iconColor: AppColors.teal700,
                       iconBackground: AppColors.teal50,
-                      footer: '+12% dari kemarin',
+                      footer: _todayRevenueFooter,
+                      footerColor: _todayRevenueFooterColor,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -51,7 +52,9 @@ class MitraDashboardView extends GetView<MitraDashboardController> {
                       iconPath: 'lib/assets/icons/Calendar Mark.svg',
                       iconColor: AppColors.blue700,
                       iconBackground: AppColors.blue50,
-                      footer: '2 pesanan baru',
+                      footer: controller.data.newOrdersTodayCount > 0
+                          ? '${controller.data.newOrdersTodayCount} pesanan baru'
+                          : null,
                     ),
                   ),
                 ],
@@ -66,7 +69,9 @@ class MitraDashboardView extends GetView<MitraDashboardController> {
                       iconPath: 'lib/assets/icons/Stopwatch.svg',
                       iconColor: AppColors.secondary900,
                       iconBackground: AppColors.secondary50,
-                      footer: 'Perlu diproses',
+                      footer: controller.data.activeOrdersCount > 0
+                          ? 'Perlu diproses'
+                          : null,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -124,6 +129,19 @@ class MitraDashboardView extends GetView<MitraDashboardController> {
         ),
       ),
     );
+  }
+
+  String? get _todayRevenueFooter {
+    final change = controller.data.todayRevenueChangePercent;
+    if (change == null) {
+      return controller.data.todayRevenue > 0 ? 'Baru hari ini' : null;
+    }
+    return '${change >= 0 ? '+' : ''}$change% dari kemarin';
+  }
+
+  Color get _todayRevenueFooterColor {
+    final change = controller.data.todayRevenueChangePercent;
+    return change != null && change < 0 ? AppColors.red600 : AppColors.teal700;
   }
 
   Widget _buildHeader() {
@@ -347,6 +365,7 @@ class MitraDashboardView extends GetView<MitraDashboardController> {
     // Tanpa guard, semua nilai 0 membuat tinggi bar jadi NaN.
     final scaleMax = maxValue <= 0 ? 1 : maxValue;
     final total = values.fold(0, (sum, value) => sum + value);
+    final change = controller.weeklyChangePercent;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -381,34 +400,40 @@ class MitraDashboardView extends GetView<MitraDashboardController> {
                   ],
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.teal50,
-                  borderRadius: BorderRadius.circular(99),
-                ),
-                child: Row(
-                  children: [
-                    SvgPicture.asset(
-                      'lib/assets/icons/Square Arrow Right Up.svg',
-                      width: 13,
-                      height: 13,
-                      colorFilter: const ColorFilter.mode(
-                        AppColors.teal700,
-                        BlendMode.srcIn,
+              if (change != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 9,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: change >= 0 ? AppColors.teal50 : AppColors.red50,
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                  child: Row(
+                    children: [
+                      SvgPicture.asset(
+                        'lib/assets/icons/Square Arrow Right Up.svg',
+                        width: 13,
+                        height: 13,
+                        colorFilter: ColorFilter.mode(
+                          change >= 0 ? AppColors.teal700 : AppColors.red600,
+                          BlendMode.srcIn,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 3),
-                    Text(
-                      '+18%',
-                      style: AppTextStyles.caption2.copyWith(
-                        color: AppColors.teal700,
-                        fontWeight: FontWeight.w700,
+                      const SizedBox(width: 3),
+                      Text(
+                        '${change >= 0 ? '+' : ''}$change%',
+                        style: AppTextStyles.caption2.copyWith(
+                          color: change >= 0
+                              ? AppColors.teal700
+                              : AppColors.red600,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
             ],
           ),
           const SizedBox(height: 18),

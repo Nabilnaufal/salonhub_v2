@@ -49,6 +49,36 @@ class MitraDashboardController extends GetxController {
     );
   }
 
+  int get weeklyRevenueTotal =>
+      weeklyRevenue.fold(0, (sum, value) => sum + value);
+
+  int get previousWeekRevenue {
+    final now = DateTime.now();
+    final end = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(const Duration(days: 6));
+    final start = end.subtract(const Duration(days: 7));
+    return data.orders
+        .where((order) {
+          final at = order.scheduledAt;
+          return at != null &&
+              !at.isBefore(start) &&
+              at.isBefore(end) &&
+              order.isPaid &&
+              order.status != MitraOrderStatus.dibatalkan;
+        })
+        .fold(0, (total, order) => total + order.totalPrice);
+  }
+
+  /// null bila minggu sebelumnya belum ada pendapatan.
+  int? get weeklyChangePercent {
+    final previous = previousWeekRevenue;
+    if (previous == 0) return null;
+    return ((weeklyRevenueTotal - previous) * 100 / previous).round();
+  }
+
   int dayLabelIndex(DateTime date) => date.weekday - 1;
 
   void toggleShop() {

@@ -11,6 +11,7 @@ class MitraStatCard extends StatelessWidget {
     this.iconColor = AppColors.primary900,
     this.iconBackground = AppColors.primary50,
     this.footer,
+    this.footerColor = AppColors.teal700,
   });
 
   final String label;
@@ -19,6 +20,7 @@ class MitraStatCard extends StatelessWidget {
   final Color iconColor;
   final Color iconBackground;
   final String? footer;
+  final Color footerColor;
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +80,7 @@ class MitraStatCard extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppTextStyles.caption2.copyWith(
-                color: AppColors.teal700,
+                color: footerColor,
                 fontWeight: FontWeight.w700,
               ),
             ),

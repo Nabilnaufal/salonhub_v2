@@ -167,34 +167,8 @@ class MitraEarningsView extends GetView<MitraEarningsController> {
                 ),
               ),
               const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: AppColors.white.withValues(alpha: .14),
-                  borderRadius: BorderRadius.circular(99),
-                ),
-                child: Row(
-                  children: [
-                    SvgPicture.asset(
-                      'lib/assets/icons/Square Arrow Right Up.svg',
-                      width: 12,
-                      height: 12,
-                      colorFilter: const ColorFilter.mode(
-                        AppColors.teal300,
-                        BlendMode.srcIn,
-                      ),
-                    ),
-                    const SizedBox(width: 3),
-                    Text(
-                      '+${controller.growthPercent.toStringAsFixed(1)}%',
-                      style: AppTextStyles.caption2.copyWith(
-                        color: AppColors.teal300,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              if (controller.growthPercent != null)
+                _growthBadge(controller.growthPercent!),
             ],
           ),
           const SizedBox(height: 6),
@@ -259,6 +233,37 @@ class MitraEarningsView extends GetView<MitraEarningsController> {
             style: AppTextStyles.caption2.copyWith(
               color: AppColors.primary200,
               fontSize: 9,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _growthBadge(double growth) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.white.withValues(alpha: .14),
+        borderRadius: BorderRadius.circular(99),
+      ),
+      child: Row(
+        children: [
+          SvgPicture.asset(
+            'lib/assets/icons/Square Arrow Right Up.svg',
+            width: 12,
+            height: 12,
+            colorFilter: const ColorFilter.mode(
+              AppColors.teal300,
+              BlendMode.srcIn,
+            ),
+          ),
+          const SizedBox(width: 3),
+          Text(
+            '${growth >= 0 ? '+' : ''}${growth.toStringAsFixed(1)}%',
+            style: AppTextStyles.caption2.copyWith(
+              color: AppColors.teal300,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
