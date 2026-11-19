@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:salonhub_v2/app/data/mitra_data_service.dart';
 import 'package:salonhub_v2/app/data/receipt_download_service.dart';
 import 'package:salonhub_v2/app/models/mitra.dart';
+import 'package:salonhub_v2/app/widgets/app_snackbar.dart';
 
 class MitraEarningsController extends GetxController {
   final data = Get.find<MitraDataService>();
@@ -154,11 +154,11 @@ class MitraEarningsController extends GetxController {
 
   Future<void> downloadReport() async {
     if (_paidOrders.isEmpty) {
-      Get.snackbar(
+      showAppSnack(
         'Belum ada transaksi',
         'Laporan dibuat setelah ada pesanan lunas.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+
+        type: AppSnackType.info,
       );
       return;
     }
@@ -179,18 +179,15 @@ class MitraEarningsController extends GetxController {
             )
             .toList(),
       );
-      Get.snackbar(
+      showAppSnack(
         'Laporan tersimpan',
         'PDF laporan ${periodLabel.toLowerCase()} disimpan di $location.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
       );
     } catch (_) {
-      Get.snackbar(
+      showAppSnack(
         'Unduh gagal',
         'Laporan belum dapat disimpan. Coba lagi.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+        type: AppSnackType.error,
       );
     }
   }

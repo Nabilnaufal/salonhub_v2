@@ -1,11 +1,11 @@
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:salonhub_v2/app/data/mitra_data_service.dart';
 import 'package:salonhub_v2/app/models/mitra.dart';
 import 'package:salonhub_v2/app/services/auth_service.dart';
+import 'package:salonhub_v2/app/widgets/app_snackbar.dart';
 
 class MitraTeamFormController extends GetxController {
   final data = Get.find<MitraDataService>();
@@ -51,13 +51,10 @@ class MitraTeamFormController extends GetxController {
     final shift = shiftController.text.trim();
 
     if (name.isEmpty || role.isEmpty) {
-      Get.snackbar(
+      showAppSnack(
         'Lengkapi data',
         'Nama dan spesialisasi barber wajib diisi.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
-        backgroundColor: const Color(0xFFFFF1F2),
-        colorText: const Color(0xFF9F1239),
+        type: AppSnackType.error,
       );
       return;
     }
@@ -90,18 +87,16 @@ class MitraTeamFormController extends GetxController {
       }
 
       Get.back();
-      Get.snackbar(
+      showAppSnack(
         isEditing ? 'Barber diperbarui' : 'Barber ditambahkan',
-        '$name sudah tersimpan di Supabase.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+        '$name berhasil disimpan.',
       );
     } catch (_) {
-      Get.snackbar(
+      showAppSnack(
         'Gagal menyimpan',
         'Data barber belum tersimpan. Coba lagi.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+
+        type: AppSnackType.error,
       );
     } finally {
       isBusy.value = false;

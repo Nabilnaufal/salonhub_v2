@@ -5,6 +5,7 @@ import 'package:salonhub_v2/app/data/receipt_download_service.dart';
 import 'package:salonhub_v2/app/models/mitra.dart';
 import 'package:salonhub_v2/app/routes/app_pages.dart';
 import 'package:salonhub_v2/app/services/external_actions.dart';
+import 'package:salonhub_v2/app/widgets/app_snackbar.dart';
 
 class MitraOrderDetailController extends GetxController {
   final data = Get.find<MitraDataService>();
@@ -25,31 +26,25 @@ class MitraOrderDetailController extends GetxController {
 
   Future<void> acceptOrder() async {
     await _setStatus(MitraOrderStatus.menunggu);
-    Get.snackbar(
+    showAppSnack(
       'Pesanan diterima',
       'Customer akan melihat status pesanannya menjadi "Menunggu".',
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
     );
   }
 
   Future<void> startOrder() async {
     await _setStatus(MitraOrderStatus.diproses);
-    Get.snackbar(
+    showAppSnack(
       'Layanan dimulai',
       'Status pesanan berubah menjadi "Diproses".',
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
     );
   }
 
   Future<void> finishOrder() async {
     await _setStatus(MitraOrderStatus.selesai);
-    Get.snackbar(
+    showAppSnack(
       'Pesanan selesai',
       'Terima kasih, pesanan sudah ditandai selesai.',
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
     );
   }
 
@@ -86,22 +81,21 @@ class MitraOrderDetailController extends GetxController {
   Future<void> callCustomer() async {
     final phone = order?.customerPhone ?? '';
     if (phone.isEmpty) {
-      Get.snackbar(
+      showAppSnack(
         'Nomor tidak tersedia',
         'Customer walk-in tidak punya nomor telepon.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+
+        type: AppSnackType.error,
       );
       return;
     }
     try {
       await callNumber(phone);
     } catch (_) {
-      Get.snackbar(
+      showAppSnack(
         'Telepon',
         'Tidak bisa membuka aplikasi telepon.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+        type: AppSnackType.error,
       );
     }
   }
@@ -128,18 +122,15 @@ class MitraOrderDetailController extends GetxController {
           shopName: data.shop.value.name,
         ),
       );
-      Get.snackbar(
+      showAppSnack(
         'Struk tersimpan',
         'PDF pesanan ${currentOrder.id} disimpan di $location.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
       );
     } catch (_) {
-      Get.snackbar(
+      showAppSnack(
         'Unduh gagal',
         'Struk belum dapat disimpan. Coba lagi.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+        type: AppSnackType.error,
       );
     }
   }

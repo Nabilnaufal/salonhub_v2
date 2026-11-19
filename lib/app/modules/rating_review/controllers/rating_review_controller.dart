@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import 'package:salonhub_v2/app/services/catalog_service.dart';
+import 'package:salonhub_v2/app/widgets/app_snackbar.dart';
 
 class RatingReviewController extends GetxController {
   final catalog = Get.find<CatalogService>();
@@ -75,11 +75,9 @@ class RatingReviewController extends GetxController {
       );
 
       Get.back();
-      Get.snackbar(
+      showAppSnack(
         'Ulasan terkirim',
         'Terima kasih sudah memberikan rating dan ulasan.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
       );
     } catch (_) {
       _showError('Ulasan belum tersimpan. Pastikan booking sudah selesai.');
@@ -89,14 +87,7 @@ class RatingReviewController extends GetxController {
   }
 
   void _showError(String message) {
-    Get.snackbar(
-      'Ulasan gagal',
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
-      backgroundColor: const Color(0xFFFFF1F2),
-      colorText: const Color(0xFF9F1239),
-    );
+    showAppSnack('Ulasan gagal', message, type: AppSnackType.error);
   }
 
   void _readArguments() {

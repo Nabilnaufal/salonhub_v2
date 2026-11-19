@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-
 import 'package:salonhub_v2/app/data/mitra_data_service.dart';
 import 'package:salonhub_v2/app/routes/app_pages.dart';
 import 'package:salonhub_v2/app/services/auth_service.dart';
+import 'package:salonhub_v2/app/widgets/app_snackbar.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MitraLoginController extends GetxController {
   final auth = Get.find<AuthService>();
@@ -67,14 +67,7 @@ class MitraLoginController extends GetxController {
   }
 
   void _showError(String message) {
-    Get.snackbar(
-      'Login mitra gagal',
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
-      backgroundColor: const Color(0xFFFFF1F2),
-      colorText: const Color(0xFF9F1239),
-    );
+    showAppSnack('Login mitra gagal', message, type: AppSnackType.error);
   }
 
   @override

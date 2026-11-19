@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
 import 'package:salonhub_v2/app/data/mitra_data_service.dart';
+import 'package:salonhub_v2/app/widgets/app_snackbar.dart';
 
 class _HourDraft {
   _HourDraft({
@@ -175,18 +176,13 @@ Future<void> showOpeningHoursEditor(
           )
           .toList(),
     );
-    Get.snackbar(
-      'Jam operasional',
-      'Jadwal buka toko sudah disimpan.',
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
-    );
+    showAppSnack('Jam operasional', 'Jadwal buka toko sudah disimpan.');
   } catch (_) {
-    Get.snackbar(
+    showAppSnack(
       'Gagal menyimpan',
       'Jam operasional belum tersimpan. Coba lagi.',
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
+
+      type: AppSnackType.error,
     );
   }
 }

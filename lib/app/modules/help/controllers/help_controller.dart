@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import 'package:salonhub_v2/app/services/auth_service.dart';
 import 'package:salonhub_v2/app/services/catalog_service.dart';
+import 'package:salonhub_v2/app/widgets/app_snackbar.dart';
 
 class HelpController extends GetxController {
   final auth = Get.find<AuthService>();
@@ -24,11 +24,10 @@ class HelpController extends GetxController {
   Future<void> sendHelpRequest() async {
     final body = descriptionController.text.trim();
     if (body.isEmpty) {
-      Get.snackbar(
+      showAppSnack(
         'Pesan kosong',
         'Tulis dulu kendala yang kamu alami.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+        type: AppSnackType.error,
       );
       return;
     }
@@ -42,18 +41,12 @@ class HelpController extends GetxController {
         body: body,
       );
       descriptionController.clear();
-      Get.snackbar(
-        'Bantuan',
-        'Pesan bantuan berhasil dikirim.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
-      );
+      showAppSnack('Bantuan', 'Pesan bantuan berhasil dikirim.');
     } catch (_) {
-      Get.snackbar(
+      showAppSnack(
         'Gagal mengirim',
         'Pesan belum terkirim. Coba lagi.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+        type: AppSnackType.error,
       );
     }
   }

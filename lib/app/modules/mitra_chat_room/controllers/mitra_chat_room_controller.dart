@@ -1,13 +1,12 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-
 import 'package:image_picker/image_picker.dart';
 import 'package:salonhub_v2/app/services/auth_service.dart';
 import 'package:salonhub_v2/app/services/catalog_service.dart';
 import 'package:salonhub_v2/app/services/external_actions.dart';
+import 'package:salonhub_v2/app/widgets/app_snackbar.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MitraChatMessage {
   const MitraChatMessage({
@@ -92,11 +91,10 @@ class MitraChatRoomController extends GetxController {
       final url = await auth.uploadPhoto(bytes, folder: 'chats');
       await catalog.sendMessage(id, url);
     } catch (_) {
-      Get.snackbar(
+      showAppSnack(
         'Foto gagal dikirim',
         'Coba lagi beberapa saat.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+        type: AppSnackType.error,
       );
     }
   }
@@ -110,11 +108,10 @@ class MitraChatRoomController extends GetxController {
     try {
       await catalog.sendMessage(id, text);
     } catch (_) {
-      Get.snackbar(
+      showAppSnack(
         'Pesan gagal',
         'Pesan belum terkirim. Coba lagi.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+        type: AppSnackType.error,
       );
     }
   }
@@ -134,22 +131,21 @@ class MitraChatRoomController extends GetxController {
 
   Future<void> callCustomer() async {
     if (customerPhone.isEmpty) {
-      Get.snackbar(
+      showAppSnack(
         'Nomor tidak tersedia',
         'Customer belum mengisi nomor telepon.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+
+        type: AppSnackType.error,
       );
       return;
     }
     try {
       await callNumber(customerPhone);
     } catch (_) {
-      Get.snackbar(
+      showAppSnack(
         'Telepon',
         'Tidak bisa membuka aplikasi telepon.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+        type: AppSnackType.error,
       );
     }
   }

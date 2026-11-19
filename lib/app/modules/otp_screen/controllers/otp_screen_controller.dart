@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import 'package:salonhub_v2/app/routes/app_pages.dart';
 import 'package:salonhub_v2/app/services/auth_service.dart';
+import 'package:salonhub_v2/app/widgets/app_snackbar.dart';
 
 class OtpScreenController extends GetxController {
   final auth = Get.find<AuthService>();
@@ -59,23 +59,11 @@ class OtpScreenController extends GetxController {
   Future<void> resend() async {
     if (_email.isEmpty) return;
     await auth.resendSignupOtp(_email);
-    Get.snackbar(
-      'Kode dikirim ulang',
-      'Cek kembali kotak masuk $_email.',
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
-    );
+    showAppSnack('Kode dikirim ulang', 'Cek kembali kotak masuk $_email.');
   }
 
   void _showError(String message) {
-    Get.snackbar(
-      'Verifikasi gagal',
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
-      backgroundColor: const Color(0xFFFFF1F2),
-      colorText: const Color(0xFF9F1239),
-    );
+    showAppSnack('Verifikasi gagal', message, type: AppSnackType.error);
   }
 
   @override

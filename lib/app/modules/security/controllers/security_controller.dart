@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import 'package:salonhub_v2/app/services/auth_service.dart';
+import 'package:salonhub_v2/app/widgets/app_snackbar.dart';
 
 class SecurityController extends GetxController {
   final auth = Get.find<AuthService>();
@@ -42,12 +42,7 @@ class SecurityController extends GetxController {
       await auth.changePassword(newPassword);
       currentPasswordController.clear();
       newPasswordController.clear();
-      Get.snackbar(
-        'Keamanan',
-        'Kata sandi berhasil diperbarui.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
-      );
+      showAppSnack('Keamanan', 'Kata sandi berhasil diperbarui.');
     } catch (_) {
       _showError('Password lama salah atau password baru ditolak.');
     } finally {
@@ -56,14 +51,7 @@ class SecurityController extends GetxController {
   }
 
   void _showError(String message) {
-    Get.snackbar(
-      'Keamanan',
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
-      backgroundColor: const Color(0xFFFFF1F2),
-      colorText: const Color(0xFF9F1239),
-    );
+    showAppSnack('Keamanan', message, type: AppSnackType.error);
   }
 
   @override

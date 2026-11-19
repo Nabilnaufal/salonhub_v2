@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import 'package:salonhub_v2/app/models/barber.dart';
 import 'package:salonhub_v2/app/models/mitra.dart' show formatRupiah;
 import 'package:salonhub_v2/app/routes/app_pages.dart';
-import 'package:salonhub_v2/app/services/external_actions.dart';
 import 'package:salonhub_v2/app/services/catalog_service.dart';
+import 'package:salonhub_v2/app/services/external_actions.dart';
+import 'package:salonhub_v2/app/widgets/app_snackbar.dart';
 
 class ServiceBooking {
   const ServiceBooking({
@@ -226,20 +226,17 @@ class BarberDetailController extends GetxController {
     if (shopId.isEmpty) return;
     try {
       isFavorite.value = await catalog.toggleFavorite(shopId);
-      Get.snackbar(
+      showAppSnack(
         'Favorit',
         isFavorite.value
             ? '$shopName ditambahkan ke favorit.'
             : '$shopName dihapus dari favorit.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
       );
     } catch (_) {
-      Get.snackbar(
+      showAppSnack(
         'Favorit',
         'Gagal menyimpan favorit.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+        type: AppSnackType.error,
       );
     }
   }
@@ -254,11 +251,10 @@ class BarberDetailController extends GetxController {
   void openMaps() {
     final value = barber;
     if (value?.latitude == null || value?.longitude == null) {
-      Get.snackbar(
+      showAppSnack(
         'Peta',
         'Lokasi toko belum diatur.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+        type: AppSnackType.error,
       );
       return;
     }
@@ -276,11 +272,10 @@ class BarberDetailController extends GetxController {
   void bookNow() {
     final value = barber;
     if (value == null) {
-      Get.snackbar(
+      showAppSnack(
         'Booking',
         'Barbershop belum siap, coba lagi.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+        type: AppSnackType.error,
       );
       return;
     }

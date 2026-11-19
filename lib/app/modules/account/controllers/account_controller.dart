@@ -1,10 +1,9 @@
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-
 import 'package:salonhub_v2/app/services/auth_service.dart';
+import 'package:salonhub_v2/app/widgets/app_snackbar.dart';
 
 class AccountController extends GetxController {
   final auth = Get.find<AuthService>();
@@ -43,12 +42,7 @@ class AccountController extends GetxController {
         extension: extension == 'png' ? 'png' : 'jpg',
       );
       avatarUrl.value = url;
-      Get.snackbar(
-        'Foto diperbarui',
-        'Avatar baru tersimpan di Supabase.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
-      );
+      showAppSnack('Foto diperbarui', 'Foto profil berhasil diperbarui.');
     } catch (_) {
       _showError('Upload foto gagal. Coba lagi.');
     } finally {
@@ -69,12 +63,7 @@ class AccountController extends GetxController {
         fullName: name,
         phone: phoneController.text.trim(),
       );
-      Get.snackbar(
-        'Akun',
-        'Perubahan akun berhasil disimpan.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
-      );
+      showAppSnack('Akun', 'Perubahan akun berhasil disimpan.');
     } catch (_) {
       _showError('Perubahan gagal disimpan.');
     } finally {
@@ -83,14 +72,7 @@ class AccountController extends GetxController {
   }
 
   void _showError(String message) {
-    Get.snackbar(
-      'Akun',
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
-      backgroundColor: const Color(0xFFFFF1F2),
-      colorText: const Color(0xFF9F1239),
-    );
+    showAppSnack('Akun', message, type: AppSnackType.error);
   }
 
   @override

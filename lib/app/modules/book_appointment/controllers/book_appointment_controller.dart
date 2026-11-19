@@ -1,9 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import 'package:salonhub_v2/app/models/barber.dart';
 import 'package:salonhub_v2/app/routes/app_pages.dart';
 import 'package:salonhub_v2/app/services/catalog_service.dart';
+import 'package:salonhub_v2/app/widgets/app_snackbar.dart';
 
 class AppointmentStylist {
   const AppointmentStylist({
@@ -276,11 +275,10 @@ class BookAppointmentController extends GetxController {
   Future<void> submitBooking() async {
     final selected = selectedServices;
     if (selected.isEmpty) {
-      Get.snackbar(
+      showAppSnack(
         'Pilih layanan',
         'Pilih minimal satu layanan.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+        type: AppSnackType.error,
       );
       return;
     }
@@ -322,13 +320,10 @@ class BookAppointmentController extends GetxController {
         },
       );
     } catch (_) {
-      Get.snackbar(
+      showAppSnack(
         'Booking gagal',
         'Jadwal tidak tersedia atau koneksi bermasalah.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
-        backgroundColor: const Color(0xFFFFF1F2),
-        colorText: const Color(0xFF9F1239),
+        type: AppSnackType.error,
       );
     } finally {
       isLoading.value = false;

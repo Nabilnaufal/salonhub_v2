@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import 'package:salonhub_v2/app/routes/app_pages.dart';
 import 'package:salonhub_v2/app/services/catalog_service.dart';
+import 'package:salonhub_v2/app/widgets/app_snackbar.dart';
 
 class PaymentController extends GetxController {
   final catalog = Get.find<CatalogService>();
@@ -78,11 +77,11 @@ class PaymentController extends GetxController {
         },
       );
     } catch (_) {
-      Get.snackbar(
+      showAppSnack(
         'Pembayaran gagal',
         'Status pembayaran belum tersimpan. Coba lagi.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+
+        type: AppSnackType.error,
       );
     } finally {
       isBusy.value = false;

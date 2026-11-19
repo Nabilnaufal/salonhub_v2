@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:salonhub_v2/app/data/mitra_data_service.dart';
 import 'package:salonhub_v2/app/routes/app_pages.dart';
-import 'package:salonhub_v2/app/widgets/opening_hours_editor.dart';
 import 'package:salonhub_v2/app/services/auth_service.dart';
+import 'package:salonhub_v2/app/widgets/app_snackbar.dart';
+import 'package:salonhub_v2/app/widgets/opening_hours_editor.dart';
 
 class MitraSettingsController extends GetxController {
   final data = Get.find<MitraDataService>();
@@ -48,11 +49,9 @@ class MitraSettingsController extends GetxController {
         promoNotifications: promoNotifications.value,
       );
     } catch (_) {
-      Get.snackbar(
+      showAppSnack(
         'Pengaturan notifikasi',
         'Perubahan belum tersimpan. Coba lagi.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
       );
     }
   }
@@ -130,11 +129,10 @@ class MitraSettingsController extends GetxController {
 
     if (save != true) return;
     if (password.length < 6) {
-      Get.snackbar(
+      showAppSnack(
         'Password lemah',
         'Minimal 6 karakter.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+        type: AppSnackType.error,
       );
       return;
     }
@@ -145,18 +143,16 @@ class MitraSettingsController extends GetxController {
       if (email == null) throw StateError('sesi tidak valid');
       await auth.signIn(email: email, password: current);
       await auth.changePassword(password);
-      Get.snackbar(
+      showAppSnack(
         'Password diperbarui',
         'Gunakan password baru saat login berikutnya.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
       );
     } catch (_) {
-      Get.snackbar(
+      showAppSnack(
         'Gagal mengubah password',
         'Password saat ini salah atau password baru ditolak.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+
+        type: AppSnackType.error,
       );
     }
   }
@@ -198,7 +194,7 @@ class MitraSettingsController extends GetxController {
         content: const Text(
           'SalonHub Mitra v1.0.0\n\n'
           'Aplikasi pengelolaan barbershop untuk mitra SalonHub. '
-          'Semua data tersimpan di Supabase.',
+          'Semua data tersimpan dengan aman.',
         ),
         actions: [TextButton(onPressed: Get.back, child: const Text('Tutup'))],
       ),
@@ -210,8 +206,8 @@ class MitraSettingsController extends GetxController {
       AlertDialog(
         title: const Text('Kebijakan privasi'),
         content: const Text(
-          'Data akun, toko, pesanan, dan foto disimpan di Supabase dan hanya '
-          'dapat diakses oleh pemilik akun sesuai aturan RLS.',
+          'Data akun, toko, pesanan, dan foto disimpan dengan aman dan hanya '
+          'dapat diakses oleh pemilik akun.',
         ),
         actions: [
           TextButton(onPressed: Get.back, child: const Text('Mengerti')),

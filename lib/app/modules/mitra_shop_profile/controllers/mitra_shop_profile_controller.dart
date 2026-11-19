@@ -1,14 +1,14 @@
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:salonhub_v2/app/data/mitra_data_service.dart';
-import 'package:salonhub_v2/app/routes/app_pages.dart';
 import 'package:salonhub_v2/app/models/mitra.dart';
+import 'package:salonhub_v2/app/routes/app_pages.dart';
 import 'package:salonhub_v2/app/services/auth_service.dart';
 import 'package:salonhub_v2/app/services/external_actions.dart';
+import 'package:salonhub_v2/app/widgets/app_snackbar.dart';
 import 'package:salonhub_v2/app/widgets/location_picker.dart';
 
 class MitraShopProfileController extends GetxController {
@@ -33,22 +33,21 @@ class MitraShopProfileController extends GetxController {
     final lat = shop.latitude;
     final lng = shop.longitude;
     if (lat == null || lng == null) {
-      Get.snackbar(
+      final hasAddress = shop.address.isNotEmpty;
+      showAppSnack(
         'Lokasi barbershop',
-        shop.address.isEmpty ? 'Koordinat toko belum diatur.' : shop.address,
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+        hasAddress ? shop.address : 'Koordinat toko belum diatur.',
+        type: hasAddress ? AppSnackType.info : AppSnackType.error,
       );
       return;
     }
     try {
       await openMapLocation(lat, lng, shop.name);
     } catch (_) {
-      Get.snackbar(
+      showAppSnack(
         'Lokasi barbershop',
         'Tidak bisa membuka aplikasi peta.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+        type: AppSnackType.error,
       );
     }
   }
@@ -85,11 +84,11 @@ class MitraShopProfileController extends GetxController {
       final url = await auth.uploadPhoto(bytes, folder: 'shops');
       await data.updateShop(shop.copyWith(gallery: [...shop.gallery, url]));
     } catch (_) {
-      Get.snackbar(
+      showAppSnack(
         'Gagal mengunggah',
         'Foto galeri belum tersimpan. Coba lagi.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+
+        type: AppSnackType.error,
       );
     } finally {
       isUploading.value = false;
@@ -226,12 +225,7 @@ class MitraShopProfileController extends GetxController {
           longitude: picked?.longitude ?? shop.longitude,
         ),
       );
-      Get.snackbar(
-        'Profil diperbarui',
-        'Perubahan sudah tersimpan di Supabase.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
-      );
+      showAppSnack('Profil diperbarui', 'Data berhasil disimpan.');
     }
 
     nameController.dispose();

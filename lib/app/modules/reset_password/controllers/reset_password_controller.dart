@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import 'package:salonhub_v2/app/routes/app_pages.dart';
 import 'package:salonhub_v2/app/services/auth_service.dart';
+import 'package:salonhub_v2/app/widgets/app_snackbar.dart';
 
 class ResetPasswordController extends GetxController {
   final auth = Get.find<AuthService>();
@@ -65,11 +65,9 @@ class ResetPasswordController extends GetxController {
       await auth.verifyRecoveryOtp(email: _email, token: otpCode);
       await auth.updatePassword(password);
       final profile = await auth.loadProfile();
-      Get.snackbar(
+      showAppSnack(
         'Password diperbarui',
         'Gunakan password baru untuk masuk berikutnya.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
       );
       Get.offAllNamed(
         profile?.isMitra == true ? Routes.MITRA_MAIN : Routes.HOME,
@@ -84,23 +82,11 @@ class ResetPasswordController extends GetxController {
   Future<void> resend() async {
     if (_email.isEmpty) return;
     await auth.resetPassword(_email);
-    Get.snackbar(
-      'Kode dikirim ulang',
-      'Cek kembali kotak masuk $_email.',
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
-    );
+    showAppSnack('Kode dikirim ulang', 'Cek kembali kotak masuk $_email.');
   }
 
   void _showError(String message) {
-    Get.snackbar(
-      'Reset gagal',
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
-      backgroundColor: const Color(0xFFFFF1F2),
-      colorText: const Color(0xFF9F1239),
-    );
+    showAppSnack('Reset gagal', message, type: AppSnackType.error);
   }
 
   @override

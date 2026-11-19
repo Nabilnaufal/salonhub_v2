@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import 'package:salonhub_v2/app/routes/app_pages.dart';
 import 'package:salonhub_v2/app/services/auth_service.dart';
+import 'package:salonhub_v2/app/widgets/app_snackbar.dart';
 
 class ForgotPasswordController extends GetxController {
   final auth = Get.find<AuthService>();
@@ -12,11 +12,10 @@ class ForgotPasswordController extends GetxController {
   Future<void> sendCode() async {
     final email = emailController.text.trim();
     if (email.isEmpty) {
-      Get.snackbar(
+      showAppSnack(
         'Email kosong',
         'Masukkan email yang terdaftar.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+        type: AppSnackType.error,
       );
       return;
     }
@@ -24,19 +23,17 @@ class ForgotPasswordController extends GetxController {
     isBusy.value = true;
     try {
       await auth.resetPassword(email);
-      Get.snackbar(
+      showAppSnack(
         'Email terkirim',
         'Cek 6 digit kode yang kami kirim ke $email.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
       );
       Get.offNamed(Routes.RESET_PASSWORD, arguments: {'email': email});
     } catch (_) {
-      Get.snackbar(
+      showAppSnack(
         'Gagal mengirim',
         'Email tidak ditemukan atau server sedang sibuk.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+
+        type: AppSnackType.error,
       );
     } finally {
       isBusy.value = false;

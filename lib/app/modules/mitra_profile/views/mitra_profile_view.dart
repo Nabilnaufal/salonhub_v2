@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
 import 'package:salonhub_v2/app/modules/mitra_profile/controllers/mitra_profile_controller.dart';
 import 'package:salonhub_v2/app/widgets/app_photo.dart';
+import 'package:salonhub_v2/app/widgets/app_snackbar.dart';
 
 class MitraProfileView extends GetView<MitraProfileController> {
   const MitraProfileView({super.key});
@@ -106,11 +107,11 @@ class MitraProfileView extends GetView<MitraProfileController> {
                   title: 'Pusat Bantuan',
                   subtitle: 'FAQ dan hubungi tim SalonHub',
                   onTap: () {
-                    Get.snackbar(
+                    showAppSnack(
                       'Pusat Bantuan',
                       'Halaman bantuan mitra akan segera tersedia.',
-                      snackPosition: SnackPosition.BOTTOM,
-                      margin: const EdgeInsets.all(16),
+
+                      type: AppSnackType.info,
                     );
                   },
                 ),

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-
 import 'package:salonhub_v2/app/models/barber.dart';
 import 'package:salonhub_v2/app/routes/app_pages.dart';
-import 'package:salonhub_v2/app/services/external_actions.dart';
 import 'package:salonhub_v2/app/services/catalog_service.dart';
+import 'package:salonhub_v2/app/services/external_actions.dart';
+import 'package:salonhub_v2/app/widgets/app_snackbar.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 enum BookingStatus { booked, waiting, onProcess, finished }
 
@@ -319,18 +319,12 @@ class OrdersController extends GetxController {
         await catalog.cancelBooking(activeOrder.value.id);
       }
       isBookingCancelled.value = true;
-      Get.snackbar(
-        'Pesanan dibatalkan',
-        'Pesanan kamu berhasil dibatalkan.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
-      );
+      showAppSnack('Pesanan dibatalkan', 'Pesanan kamu berhasil dibatalkan.');
     } catch (_) {
-      Get.snackbar(
+      showAppSnack(
         'Gagal membatalkan',
         'Coba lagi beberapa saat.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+        type: AppSnackType.error,
       );
     } finally {
       isBusy.value = false;
@@ -340,22 +334,20 @@ class OrdersController extends GetxController {
   Future<void> openMaps() async {
     final coordinates = await catalog.shopCoordinates(currentOrder.shopId);
     if (coordinates == null) {
-      Get.snackbar(
+      showAppSnack(
         'Peta',
         'Lokasi barbershop belum diatur.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+        type: AppSnackType.error,
       );
       return;
     }
     try {
       await openMapLocation(coordinates.$1, coordinates.$2);
     } catch (_) {
-      Get.snackbar(
+      showAppSnack(
         'Peta',
         'Tidak bisa membuka aplikasi peta.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+        type: AppSnackType.error,
       );
     }
   }

@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:salonhub_v2/app/data/mitra_data_service.dart';
 import 'package:salonhub_v2/app/models/mitra.dart';
 import 'package:salonhub_v2/app/routes/app_pages.dart';
+import 'package:salonhub_v2/app/widgets/app_snackbar.dart';
 
 class MitraDashboardController extends GetxController {
   final data = Get.find<MitraDataService>();
@@ -123,11 +123,6 @@ class MitraDashboardController extends GetxController {
       Get.toNamed(Routes.MITRA_ORDERS);
       return;
     }
-    Get.snackbar(
-      'Notifikasi',
-      'Tidak ada notifikasi baru saat ini.',
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
-    );
+    showAppSnack('Notifikasi', 'Tidak ada notifikasi baru saat ini.');
   }
 }

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:salonhub_v2/app/data/mitra_data_service.dart';
 import 'package:salonhub_v2/app/models/mitra.dart';
 import 'package:salonhub_v2/app/routes/app_pages.dart';
+import 'package:salonhub_v2/app/widgets/app_snackbar.dart';
 import 'package:salonhub_v2/app/widgets/opening_hours_editor.dart';
 
 class MitraScheduleController extends GetxController {
@@ -90,11 +91,11 @@ class MitraScheduleController extends GetxController {
     final shopId = data.shopId;
     if (shopId == null) return;
     if (data.services.where((service) => service.isActive).isEmpty) {
-      Get.snackbar(
+      showAppSnack(
         'Belum ada layanan',
         'Tambahkan layanan aktif dulu di menu Layanan.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+
+        type: AppSnackType.info,
       );
       return;
     }
@@ -160,11 +161,10 @@ class MitraScheduleController extends GetxController {
     nameController.dispose();
     if (result != true) return;
     if (name.isEmpty) {
-      Get.snackbar(
+      showAppSnack(
         'Nama kosong',
         'Isi nama customer walk-in.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+        type: AppSnackType.error,
       );
       return;
     }
@@ -185,18 +185,12 @@ class MitraScheduleController extends GetxController {
         customerName: name,
         serviceIds: selectedServices.toList(),
       );
-      Get.snackbar(
-        'Walk-in ditambahkan',
-        '$name masuk ke jadwal $time.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
-      );
+      showAppSnack('Walk-in ditambahkan', '$name masuk ke jadwal $time.');
     } catch (_) {
-      Get.snackbar(
+      showAppSnack(
         'Gagal menambah',
         'Slot $time mungkin sudah terisi.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+        type: AppSnackType.error,
       );
     }
   }

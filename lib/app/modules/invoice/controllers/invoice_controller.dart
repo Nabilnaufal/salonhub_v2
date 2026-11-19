@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:salonhub_v2/app/data/receipt_download_service.dart';
+import 'package:salonhub_v2/app/widgets/app_snackbar.dart';
 
 class InvoiceController extends GetxController {
   String appointmentDateLabel = 'Kamis, 15 Januari 2026 - 08.00 WIB';
@@ -58,16 +59,16 @@ class InvoiceController extends GetxController {
           shopName: shopName,
         ),
       );
-      Get.snackbar(
+      showAppSnack(
         'Struk berhasil diunduh',
         'Bukti pembayaran $bookingCode telah disimpan sebagai PDF.',
-        snackPosition: SnackPosition.BOTTOM,
       );
     } catch (_) {
-      Get.snackbar(
+      showAppSnack(
         'Unduh gagal',
         'Bukti pembayaran belum dapat disimpan. Silakan coba lagi.',
-        snackPosition: SnackPosition.BOTTOM,
+
+        type: AppSnackType.error,
       );
     } finally {
       isDownloading = false;

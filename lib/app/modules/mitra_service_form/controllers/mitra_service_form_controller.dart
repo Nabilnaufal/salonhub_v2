@@ -1,11 +1,11 @@
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:salonhub_v2/app/data/mitra_data_service.dart';
 import 'package:salonhub_v2/app/models/mitra.dart';
 import 'package:salonhub_v2/app/services/auth_service.dart';
+import 'package:salonhub_v2/app/widgets/app_snackbar.dart';
 
 class MitraServiceFormController extends GetxController {
   final data = Get.find<MitraDataService>();
@@ -97,11 +97,9 @@ class MitraServiceFormController extends GetxController {
       }
 
       Get.back();
-      Get.snackbar(
+      showAppSnack(
         isEditing ? 'Layanan diperbarui' : 'Layanan ditambahkan',
-        '$name sudah tersimpan di Supabase.',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
+        '$name berhasil disimpan.',
       );
     } catch (_) {
       _showError('Layanan gagal disimpan.');
@@ -111,14 +109,7 @@ class MitraServiceFormController extends GetxController {
   }
 
   void _showError(String message) {
-    Get.snackbar(
-      'Lengkapi data',
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(16),
-      backgroundColor: const Color(0xFFFFF1F2),
-      colorText: const Color(0xFF9F1239),
-    );
+    showAppSnack('Lengkapi data', message, type: AppSnackType.error);
   }
 
   void back() {

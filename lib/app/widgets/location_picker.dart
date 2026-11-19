@@ -5,6 +5,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
+import 'package:salonhub_v2/app/widgets/app_snackbar.dart';
 
 /// Pilih koordinat dengan menggeser peta; pin selalu berada di tengah.
 Future<LatLng?> showLocationPicker(BuildContext context, {LatLng? initial}) {
@@ -84,9 +85,7 @@ class _LocationPickerPageState extends State<_LocationPickerPage> {
   }
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    showAppSnack('Pencarian lokasi', message, type: AppSnackType.error);
   }
 
   void _select(_Place place) {
