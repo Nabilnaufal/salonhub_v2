@@ -56,8 +56,14 @@ class MitraChatRoomController extends GetxController {
 
     final uid = Supabase.instance.client.auth.currentUser?.id;
     _subscription = catalog.messagesStream(id).listen((rows) {
+      final sorted = [...rows]
+        ..sort(
+          (a, b) => (a['created_at'] as String? ?? '').compareTo(
+            b['created_at'] as String? ?? '',
+          ),
+        );
       messages.assignAll(
-        rows.map((row) {
+        sorted.map((row) {
           final createdAt = DateTime.tryParse(
             row['created_at'] as String? ?? '',
           );
@@ -119,8 +125,11 @@ class MitraChatRoomController extends GetxController {
   void _scrollToLatest() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!scrollController.hasClients) return;
+
+      // ListView terbalik: posisi 0 = pesan terbaru.
+      final position = scrollController.position;
       scrollController.animateTo(
-        scrollController.position.maxScrollExtent,
+        position.minScrollExtent,
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeOut,
       );

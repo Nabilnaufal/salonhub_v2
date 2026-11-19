@@ -18,35 +18,45 @@ class MitraChatRoomView extends GetView<MitraChatRoomController> {
           children: [
             _buildHeader(),
             Expanded(
-              child: Obx(
-                () => ListView(
+              child: Obx(() {
+                final messages = controller.messages;
+
+                // ListView terbalik: pesan terbaru selalu menempel di bawah.
+                return ListView.builder(
                   controller: controller.scrollController,
+                  reverse: true,
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                  children: [
-                    Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.blueGray100,
-                          borderRadius: BorderRadius.circular(99),
-                        ),
-                        child: Text(
-                          'Hari ini',
-                          style: AppTextStyles.caption2.copyWith(
-                            color: AppColors.coolGray500,
+                  itemCount: messages.length + 1,
+                  itemBuilder: (context, index) {
+                    if (index == messages.length) {
+                      return Center(
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.blueGray100,
+                            borderRadius: BorderRadius.circular(99),
+                          ),
+                          child: Text(
+                            'Hari ini',
+                            style: AppTextStyles.caption2.copyWith(
+                              color: AppColors.coolGray500,
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    for (final message in controller.messages)
-                      _buildBubble(context, message),
-                  ],
-                ),
-              ),
+                      );
+                    }
+
+                    return _buildBubble(
+                      context,
+                      messages[messages.length - 1 - index],
+                    );
+                  },
+                );
+              }),
             ),
             _buildInputBar(context),
           ],
