@@ -157,64 +157,6 @@ class MitraLoginView extends GetView<MitraLoginController> {
                       label: 'Masuk',
                       onPressed: controller.login,
                     ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        const Expanded(
-                          child: Divider(color: AppColors.blueGray200),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          child: Text(
-                            'atau',
-                            style: AppTextStyles.caption1.copyWith(
-                              color: AppColors.blueGray400,
-                            ),
-                          ),
-                        ),
-                        const Expanded(
-                          child: Divider(color: AppColors.blueGray200),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: OutlinedButton(
-                        onPressed: controller.loginAsDemo,
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(
-                            color: AppColors.primary900,
-                            width: 1.3,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.play_circle_outline_rounded,
-                                size: 18,
-                                color: AppColors.primary900,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Masuk sebagai Demo',
-                                style: AppTextStyles.subHeadline3.copyWith(
-                                  color: AppColors.primary900,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),

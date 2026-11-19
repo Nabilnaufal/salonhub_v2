@@ -54,10 +54,6 @@ class MitraLoginController extends GetxController {
     }
   }
 
-  void loginAsDemo() {
-    Get.toNamed(Routes.MITRA_REGISTER);
-  }
-
   void openRegister() {
     Get.toNamed(Routes.MITRA_REGISTER);
   }
