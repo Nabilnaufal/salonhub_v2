@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
+import 'package:salonhub_v2/app/widgets/app_primary_button.dart';
 
 import '../controllers/security_controller.dart';
 
@@ -164,16 +165,27 @@ class SecurityView extends GetView<SecurityController> {
     return SizedBox(
       width: double.infinity,
       height: 54,
-      child: ElevatedButton(
-        onPressed: controller.savePassword,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary900,
-          foregroundColor: AppColors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-        child: Text(
-          'Simpan',
-          style: AppTextStyles.headline4.copyWith(color: AppColors.white),
+      child: Obx(
+        () => IgnorePointer(
+          ignoring: controller.isBusy.value,
+          child: ElevatedButton(
+            onPressed: controller.savePassword,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary900,
+              foregroundColor: AppColors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: controller.isBusy.value
+                ? const AppButtonSpinner()
+                : Text(
+                    'Simpan',
+                    style: AppTextStyles.headline4.copyWith(
+                      color: AppColors.white,
+                    ),
+                  ),
+          ),
         ),
       ),
     );

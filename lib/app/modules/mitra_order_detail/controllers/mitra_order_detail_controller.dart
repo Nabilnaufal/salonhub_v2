@@ -9,6 +9,8 @@ import 'package:salonhub_v2/app/services/external_actions.dart';
 class MitraOrderDetailController extends GetxController {
   final data = Get.find<MitraDataService>();
 
+  final isBusy = false.obs;
+
   late final String orderCode;
 
   MitraOrder? get order => data.findByCode(orderCode);
@@ -144,6 +146,11 @@ class MitraOrderDetailController extends GetxController {
 
   Future<void> _setStatus(MitraOrderStatus status) async {
     if (orderCode.isEmpty) return;
-    await data.updateOrderStatus(orderCode, status);
+    isBusy.value = true;
+    try {
+      await data.updateOrderStatus(orderCode, status);
+    } finally {
+      isBusy.value = false;
+    }
   }
 }

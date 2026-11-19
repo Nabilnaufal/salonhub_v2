@@ -17,7 +17,7 @@ class PaymentController extends GetxController {
   int serviceFeePrice = 25000;
   String bookingCode = '';
   String shopName = '';
-  bool isBusy = false;
+  final isBusy = false.obs;
 
   @override
   void onInit() {
@@ -57,8 +57,8 @@ class PaymentController extends GetxController {
   }
 
   Future<void> markAsPaid() async {
-    if (isBusy) return;
-    isBusy = true;
+    if (isBusy.value) return;
+    isBusy.value = true;
     update();
 
     try {
@@ -85,8 +85,7 @@ class PaymentController extends GetxController {
         margin: const EdgeInsets.all(16),
       );
     } finally {
-      isBusy = false;
-      update();
+      isBusy.value = false;
     }
   }
 

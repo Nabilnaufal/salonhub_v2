@@ -26,7 +26,13 @@ class ForgotPasswordView extends GetView<ForgotPasswordController> {
             textInputAction: TextInputAction.done,
           ),
           const SizedBox(height: 24),
-          AppPrimaryButton(label: 'Kirim', onPressed: controller.sendCode),
+          Obx(
+            () => AppPrimaryButton(
+              label: 'Kirim',
+              onPressed: controller.sendCode,
+              isLoading: controller.isBusy.value,
+            ),
+          ),
         ],
       ),
     );

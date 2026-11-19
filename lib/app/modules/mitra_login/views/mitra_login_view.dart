@@ -153,9 +153,12 @@ class MitraLoginView extends GetView<MitraLoginController> {
                       ],
                     ),
                     const SizedBox(height: 18),
-                    AppPrimaryButton(
-                      label: 'Masuk',
-                      onPressed: controller.login,
+                    Obx(
+                      () => AppPrimaryButton(
+                        label: 'Masuk',
+                        onPressed: controller.login,
+                        isLoading: controller.isBusy.value,
+                      ),
                     ),
                   ],
                 ),

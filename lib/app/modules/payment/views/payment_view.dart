@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
+import 'package:salonhub_v2/app/widgets/app_primary_button.dart';
 
 import '../controllers/payment_controller.dart';
 
@@ -236,19 +237,30 @@ class PaymentView extends GetView<PaymentController> {
   }
 
   Widget _buildPaidButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 48,
-      child: FilledButton(
-        onPressed: controller.markAsPaid,
-        style: FilledButton.styleFrom(
-          backgroundColor: AppColors.primary900,
-          foregroundColor: AppColors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
-        ),
-        child: Text(
-          'Sudah bayar',
-          style: AppTextStyles.headline5.copyWith(color: AppColors.white),
+    return Obx(
+      () => SizedBox(
+        width: double.infinity,
+        height: 48,
+        child: IgnorePointer(
+          ignoring: controller.isBusy.value,
+          child: FilledButton(
+            onPressed: controller.markAsPaid,
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primary900,
+              foregroundColor: AppColors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(7),
+              ),
+            ),
+            child: controller.isBusy.value
+                ? const AppButtonSpinner()
+                : Text(
+                    'Sudah bayar',
+                    style: AppTextStyles.headline5.copyWith(
+                      color: AppColors.white,
+                    ),
+                  ),
+          ),
         ),
       ),
     );

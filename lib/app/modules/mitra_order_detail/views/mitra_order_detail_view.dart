@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
 import 'package:salonhub_v2/app/models/mitra.dart';
 import 'package:salonhub_v2/app/modules/mitra_order_detail/controllers/mitra_order_detail_controller.dart';
+import 'package:salonhub_v2/app/widgets/app_primary_button.dart';
 import 'package:salonhub_v2/app/widgets/mitra_page_header.dart';
 import 'package:salonhub_v2/app/widgets/mitra_status_chip.dart';
 
@@ -736,21 +737,28 @@ class MitraOrderDetailView extends GetView<MitraOrderDetailController> {
   Widget _primaryAction({required String label, required VoidCallback onTap}) {
     return SizedBox(
       height: 46,
-      child: ElevatedButton(
-        onPressed: onTap,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary900,
-          foregroundColor: AppColors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-        child: Text(
-          label,
-          style: AppTextStyles.subHeadline3.copyWith(
-            color: AppColors.white,
-            fontWeight: FontWeight.w700,
+      child: Obx(
+        () => IgnorePointer(
+          ignoring: controller.isBusy.value,
+          child: ElevatedButton(
+            onPressed: onTap,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary900,
+              foregroundColor: AppColors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: controller.isBusy.value
+                ? const AppButtonSpinner()
+                : Text(
+                    label,
+                    style: AppTextStyles.subHeadline3.copyWith(
+                      color: AppColors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
           ),
         ),
       ),

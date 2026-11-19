@@ -7,6 +7,7 @@ import 'package:salonhub_v2/app/models/barber.dart';
 
 import '../controllers/orders_controller.dart';
 import 'package:salonhub_v2/app/widgets/app_photo.dart';
+import 'package:salonhub_v2/app/widgets/app_primary_button.dart';
 
 class OrdersView extends GetView<OrdersController> {
   const OrdersView({super.key});
@@ -463,24 +464,31 @@ class OrdersView extends GetView<OrdersController> {
               ),
               const Spacer(),
               if (showCancel)
-                SizedBox(
-                  width: 74,
-                  height: 32,
-                  child: FilledButton(
-                    onPressed: controller.cancelBooking,
-                    style: FilledButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      backgroundColor: AppColors.primary900,
-                      foregroundColor: AppColors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(7),
-                      ),
-                    ),
-                    child: Text(
-                      'Batalkan',
-                      style: AppTextStyles.caption1.copyWith(
-                        color: AppColors.white,
-                        fontWeight: FontWeight.w500,
+                Obx(
+                  () => SizedBox(
+                    width: 74,
+                    height: 32,
+                    child: IgnorePointer(
+                      ignoring: controller.isBusy.value,
+                      child: FilledButton(
+                        onPressed: controller.cancelBooking,
+                        style: FilledButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          backgroundColor: AppColors.primary900,
+                          foregroundColor: AppColors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(7),
+                          ),
+                        ),
+                        child: controller.isBusy.value
+                            ? const AppButtonSpinner()
+                            : Text(
+                                'Batalkan',
+                                style: AppTextStyles.caption1.copyWith(
+                                  color: AppColors.white,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                       ),
                     ),
                   ),

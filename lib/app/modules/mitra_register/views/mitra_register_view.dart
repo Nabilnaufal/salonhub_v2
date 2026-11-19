@@ -143,9 +143,12 @@ class MitraRegisterView extends GetView<MitraRegisterController> {
                 ),
               ),
               const SizedBox(height: 20),
-              AppPrimaryButton(
-                label: 'Daftar Sekarang',
-                onPressed: controller.submit,
+              Obx(
+                () => AppPrimaryButton(
+                  label: 'Daftar Sekarang',
+                  onPressed: controller.submit,
+                  isLoading: controller.isBusy.value,
+                ),
               ),
               const SizedBox(height: 14),
               Center(

@@ -56,9 +56,12 @@ class ResetPasswordView extends GetView<ResetPasswordController> {
             textInputAction: TextInputAction.done,
           ),
           const SizedBox(height: 24),
-          AppPrimaryButton(
-            label: 'Simpan password',
-            onPressed: controller.submit,
+          Obx(
+            () => AppPrimaryButton(
+              label: 'Simpan password',
+              onPressed: controller.submit,
+              isLoading: controller.isBusy.value,
+            ),
           ),
           const SizedBox(height: 16),
           TextButton(

@@ -133,9 +133,12 @@ class LoginScreenView extends GetView<LoginScreenController> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    AppPrimaryButton(
-                      label: 'Login',
-                      onPressed: controller.login,
+                    Obx(
+                      () => AppPrimaryButton(
+                        label: 'Login',
+                        onPressed: controller.login,
+                        isLoading: controller.isBusy.value,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     AppOutlineButton(

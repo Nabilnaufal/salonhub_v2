@@ -6,6 +6,7 @@ import 'package:salonhub_v2/app/constant/theme.dart';
 
 import '../controllers/rating_review_controller.dart';
 import 'package:salonhub_v2/app/widgets/app_photo.dart';
+import 'package:salonhub_v2/app/widgets/app_primary_button.dart';
 
 class RatingReviewView extends GetView<RatingReviewController> {
   const RatingReviewView({super.key});
@@ -321,19 +322,30 @@ class RatingReviewView extends GetView<RatingReviewController> {
   }
 
   Widget _buildSubmitButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 48,
-      child: FilledButton(
-        onPressed: controller.submitReview,
-        style: FilledButton.styleFrom(
-          backgroundColor: AppColors.primary900,
-          foregroundColor: AppColors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
-        ),
-        child: Text(
-          'Kirim',
-          style: AppTextStyles.headline5.copyWith(color: AppColors.white),
+    return Obx(
+      () => SizedBox(
+        width: double.infinity,
+        height: 48,
+        child: IgnorePointer(
+          ignoring: controller.isBusy.value,
+          child: FilledButton(
+            onPressed: controller.submitReview,
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primary900,
+              foregroundColor: AppColors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(7),
+              ),
+            ),
+            child: controller.isBusy.value
+                ? const AppButtonSpinner()
+                : Text(
+                    'Kirim',
+                    style: AppTextStyles.headline5.copyWith(
+                      color: AppColors.white,
+                    ),
+                  ),
+          ),
         ),
       ),
     );

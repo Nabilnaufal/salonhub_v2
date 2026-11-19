@@ -126,6 +126,7 @@ class OrdersController extends GetxController {
 
   final selectedTab = 0.obs;
   final isBookingCancelled = false.obs;
+  final isBusy = false.obs;
   final isLoading = false.obs;
 
   final historyBarbers = <Barber>[].obs;
@@ -312,6 +313,7 @@ class OrdersController extends GetxController {
 
     if (confirmed != true) return;
 
+    isBusy.value = true;
     try {
       if (activeOrder.value.id.isNotEmpty) {
         await catalog.cancelBooking(activeOrder.value.id);
@@ -330,6 +332,8 @@ class OrdersController extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
         margin: const EdgeInsets.all(16),
       );
+    } finally {
+      isBusy.value = false;
     }
   }
 

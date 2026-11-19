@@ -7,6 +7,7 @@ import 'package:salonhub_v2/app/widgets/appointment_payment_summary.dart';
 import 'package:salonhub_v2/app/widgets/appointment_service_option_card.dart';
 import 'package:salonhub_v2/app/widgets/appointment_stylist_card.dart';
 import 'package:salonhub_v2/app/widgets/appointment_time_chip.dart';
+import 'package:salonhub_v2/app/widgets/app_primary_button.dart';
 
 import '../controllers/book_appointment_controller.dart';
 
@@ -172,30 +173,41 @@ class BookAppointmentView extends GetView<BookAppointmentController> {
   }
 
   Widget _buildBookingButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 44,
-      child: FilledButton(
-        onPressed: controller.submitBooking,
-        style: FilledButton.styleFrom(
-          backgroundColor: AppColors.primary900,
-          foregroundColor: AppColors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Booking',
-              style: AppTextStyles.headline5.copyWith(color: AppColors.white),
+    return Obx(
+      () => SizedBox(
+        width: double.infinity,
+        height: 44,
+        child: IgnorePointer(
+          ignoring: controller.isLoading.value,
+          child: FilledButton(
+            onPressed: controller.submitBooking,
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primary900,
+              foregroundColor: AppColors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(7),
+              ),
             ),
-            const SizedBox(width: 8),
-            SvgPicture.asset(
-              '${_iconPath}Calendar Mark putih.svg',
-              width: 17,
-              height: 17,
-            ),
-          ],
+            child: controller.isLoading.value
+                ? const AppButtonSpinner()
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Booking',
+                        style: AppTextStyles.headline5.copyWith(
+                          color: AppColors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      SvgPicture.asset(
+                        '${_iconPath}Calendar Mark putih.svg',
+                        width: 17,
+                        height: 17,
+                      ),
+                    ],
+                  ),
+          ),
         ),
       ),
     );

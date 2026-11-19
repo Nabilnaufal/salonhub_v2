@@ -23,7 +23,13 @@ class OtpScreenView extends GetView<OtpScreenController> {
             onChanged: controller.onOtpChanged,
           ),
           const SizedBox(height: 24),
-          AppPrimaryButton(label: 'Kirim', onPressed: controller.sendCode),
+          Obx(
+            () => AppPrimaryButton(
+              label: 'Kirim',
+              onPressed: controller.sendCode,
+              isLoading: controller.isBusy.value,
+            ),
+          ),
           const SizedBox(height: 24),
           TextButton(
             onPressed: controller.sendCode,

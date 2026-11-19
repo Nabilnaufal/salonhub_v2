@@ -116,11 +116,14 @@ class MitraServiceFormView extends GetView<MitraServiceFormController> {
                 ),
               ),
               const SizedBox(height: 20),
-              AppPrimaryButton(
-                label: controller.isEditing
-                    ? 'Simpan Perubahan'
-                    : 'Tambah Layanan',
-                onPressed: controller.save,
+              Obx(
+                () => AppPrimaryButton(
+                  label: controller.isEditing
+                      ? 'Simpan Perubahan'
+                      : 'Tambah Layanan',
+                  onPressed: controller.save,
+                  isLoading: controller.isBusy.value,
+                ),
               ),
             ],
           ),

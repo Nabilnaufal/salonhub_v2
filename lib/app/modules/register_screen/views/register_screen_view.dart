@@ -96,7 +96,13 @@ class RegisterScreenView extends GetView<RegisterScreenController> {
             ),
           ),
           const SizedBox(height: 18),
-          AppPrimaryButton(label: 'Daftar', onPressed: controller.register),
+          Obx(
+            () => AppPrimaryButton(
+              label: 'Daftar',
+              onPressed: controller.register,
+              isLoading: controller.isBusy.value,
+            ),
+          ),
           const SizedBox(height: 16),
           Center(
             child: Wrap(

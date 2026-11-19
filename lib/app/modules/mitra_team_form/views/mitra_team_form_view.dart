@@ -92,11 +92,14 @@ class MitraTeamFormView extends GetView<MitraTeamFormController> {
                 ),
               ),
               const SizedBox(height: 20),
-              AppPrimaryButton(
-                label: controller.isEditing
-                    ? 'Simpan Perubahan'
-                    : 'Tambah Barber',
-                onPressed: controller.save,
+              Obx(
+                () => AppPrimaryButton(
+                  label: controller.isEditing
+                      ? 'Simpan Perubahan'
+                      : 'Tambah Barber',
+                  onPressed: controller.save,
+                  isLoading: controller.isBusy.value,
+                ),
               ),
             ],
           ),

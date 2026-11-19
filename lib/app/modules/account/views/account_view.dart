@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:salonhub_v2/app/constant/theme.dart';
 import 'package:salonhub_v2/app/widgets/app_photo.dart';
+import 'package:salonhub_v2/app/widgets/app_primary_button.dart';
 
 import '../controllers/account_controller.dart';
 
@@ -214,18 +215,25 @@ class AccountView extends GetView<AccountController> {
       width: double.infinity,
       height: 54,
       child: Obx(
-        () => ElevatedButton(
-          onPressed: controller.isBusy.value ? null : controller.saveAccount,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary900,
-            foregroundColor: AppColors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+        () => IgnorePointer(
+          ignoring: controller.isBusy.value,
+          child: ElevatedButton(
+            onPressed: controller.saveAccount,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary900,
+              foregroundColor: AppColors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
-          ),
-          child: Text(
-            controller.isBusy.value ? 'Menyimpan...' : 'Simpan',
-            style: AppTextStyles.headline4.copyWith(color: AppColors.white),
+            child: controller.isBusy.value
+                ? const AppButtonSpinner()
+                : Text(
+                    'Simpan',
+                    style: AppTextStyles.headline4.copyWith(
+                      color: AppColors.white,
+                    ),
+                  ),
           ),
         ),
       ),
